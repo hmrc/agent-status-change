@@ -1,3 +1,5 @@
 # microservice specific routes
 
-GET        /hello-world             uk.gov.hmrc.agentstatuschange.controllers.MicroserviceHelloWorld.hello
+GET         /entities                       @uk.gov.hmrc.agentstatuschange.controllers.AgentstatuschangeController.entities
+GET         /entities/:utr                  @uk.gov.hmrc.agentstatuschange.controllers.AgentstatuschangeController.entitiesByUtr(utr:uk.gov.hmrc.agentmtdidentifiers.model.Utr)
+
