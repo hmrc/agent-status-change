@@ -2,12 +2,12 @@ package uk.gov.hmrc.agentstatuschange.models
 
 import play.api.libs.json.Json
 
-case class AgentstatuschangeModel(
+case class AgentStatusChangeModel(
   parameter1: String,
   parameter2: Option[String],
   telephoneNumber: Option[String],
   emailAddress: Option[String])
 
-object AgentstatuschangeModel {
-  implicit val modelFormat = Json.format[AgentstatuschangeModel]
+object AgentStatusChangeModel {
+  implicit val modelFormat = Json.format[AgentStatusChangeModel]
 }

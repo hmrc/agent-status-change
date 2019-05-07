@@ -3,10 +3,10 @@ package uk.gov.hmrc.agentstatuschange.controllers
 import org.scalatest.Suite
 import org.scalatestplus.play.ServerProvider
 import play.api.libs.json.Json
-import play.api.libs.ws.{ WSClient, WSResponse }
+import play.api.libs.ws.{WSClient, WSResponse}
 import uk.gov.hmrc.agentstatuschange.support.ServerBaseISpec
 
-class AgentstatuschangeControllerISpec extends ServerBaseISpec {
+class AgentStatusChangeControllerISpec extends ServerBaseISpec {
 
   this: Suite with ServerProvider =>
 

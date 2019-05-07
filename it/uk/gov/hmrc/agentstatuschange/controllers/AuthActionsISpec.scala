@@ -3,11 +3,11 @@ package uk.gov.hmrc.agentstatuschange.controllers
 import play.api.mvc.Result
 import play.api.mvc.Results._
 import play.api.test.FakeRequest
-import uk.gov.hmrc.auth.core.{ AuthConnector, AuthorisationException, InsufficientEnrolments }
-import uk.gov.hmrc.http.{ HeaderCarrier, SessionKeys }
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisationException, InsufficientEnrolments}
+import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 import uk.gov.hmrc.agentstatuschange.support.AppBaseISpec
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class AuthActionsISpec extends AppBaseISpec {
 
@@ -17,7 +17,7 @@ class AuthActionsISpec extends AppBaseISpec {
 
     implicit val hc = HeaderCarrier()
     implicit val request = FakeRequest().withSession(SessionKeys.authToken -> "Bearer XYZ")
-    import scala.concurrent.ExecutionContext.Implicits.global
+    implicit val ec = ExecutionContext.global
 
     def withAuthorisedAsAgent[A]: Result = {
       await(super.withAuthorisedAsAgent { arn => Future.successful(Ok(arn.value)) })
