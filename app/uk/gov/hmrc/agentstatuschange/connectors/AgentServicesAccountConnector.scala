@@ -30,13 +30,13 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, HttpPost, NotFoundException}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class AgencyName(name: Option[String])
+case class AgencyName(name: String)
 
 case class AgencyNameNotFound() extends Exception
 
 object AgencyName {
   implicit val nameReads: Reads[AgencyName] =
-    (JsPath \ "agencyName").readNullable[String].map(AgencyName(_))
+    (JsPath \ "agencyName").read[String].map(AgencyName(_))
 }
 
 @Singleton
@@ -47,9 +47,8 @@ class AgentServicesAccountConnector @Inject()(appConfig: AppConfig,
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
-  def getAgencyNameByArn(arn: Arn)(
-      implicit hc: HeaderCarrier,
-      ec: ExecutionContext): Future[Option[String]] =
+  def getAgencyNameByArn(arn: Arn)(implicit hc: HeaderCarrier,
+                                   ec: ExecutionContext): Future[String] =
     monitor(s"ConsumedAPI-Get-AgencyNameByArn-GET") {
       http
         .GET[AgencyName](
@@ -59,12 +58,12 @@ class AgentServicesAccountConnector @Inject()(appConfig: AppConfig,
               arn.value)}").toString)
         .map(_.name)
     } recoverWith {
-      case _: NotFoundException => Future successful None
+      case _: NotFoundException =>
+        throw new NotFoundException(s"agency name not found for arn: $arn")
     }
 
-  def getAgencyNameByUtr(utr: Utr)(
-      implicit hc: HeaderCarrier,
-      ec: ExecutionContext): Future[Option[String]] =
+  def getAgencyNameByUtr(utr: Utr)(implicit hc: HeaderCarrier,
+                                   ec: ExecutionContext): Future[String] =
     monitor(s"ConsumedAPI-Get-AgencyNameByUtr-GET") {
       http
         .GET[AgencyName](new URL(
@@ -73,7 +72,8 @@ class AgentServicesAccountConnector @Inject()(appConfig: AppConfig,
             utr.value)}").toString)
         .map(_.name)
     } recoverWith {
-      case _: NotFoundException => Future successful None
+      case _: NotFoundException =>
+        throw new NotFoundException(s"agency name not found for utr: $utr")
     }
 
 }

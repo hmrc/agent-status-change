@@ -33,7 +33,7 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
       Seq(
         "arn" -> agentReference.value,
         "agentStatus" -> model.agentStatus,
-        "agencyName" -> model.agencyName.getOrElse("")
+        "agencyName" -> model.agencyName
       )
     )
 
