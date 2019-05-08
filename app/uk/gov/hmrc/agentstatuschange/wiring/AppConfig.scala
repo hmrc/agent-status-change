@@ -25,13 +25,11 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 @ImplementedBy(classOf[AppConfigImpl])
 trait AppConfig {
   val appName: String
-  val authBaseUrl: String
   val agentServicesAccountUrl: URL
 }
 
 class AppConfigImpl @Inject()(config: ServicesConfig) extends AppConfig {
   val appName = config.getString("appName")
-  val authBaseUrl = config.baseUrl("auth")
   val agentServicesAccountUrl: URL = new URL(
     config.baseUrl("agent-services-account"))
 }
