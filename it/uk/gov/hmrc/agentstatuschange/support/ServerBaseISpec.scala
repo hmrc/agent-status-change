@@ -14,7 +14,10 @@ abstract class ServerBaseISpec extends BaseISpec with GuiceOneServerPerSuite wit
       "metrics.enabled" -> true,
       "auditing.enabled" -> true,
       "auditing.consumer.baseUri.host" -> wireMockHost,
-      "auditing.consumer.baseUri.port" -> wireMockPort
+      "auditing.consumer.baseUri.port" -> wireMockPort,
+      "microservice.services.agent-services-account.host" -> wireMockHost,
+      "microservice.services.agent-services-account.port" -> wireMockPort,
+      "test.stubbed.status" -> "Active"
     ).build()
 
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(timeout = Span(4, Seconds), interval = Span(1, Seconds))
