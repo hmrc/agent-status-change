@@ -14,24 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentstatuschange.wiring
+package uk.gov.hmrc.agentstatuschange
 
-import java.net.{URL, URLDecoder}
+import java.nio.charset.StandardCharsets.UTF_8
 
-import com.google.inject.ImplementedBy
-import javax.inject.Inject
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import play.utils.UriEncoding
 
-@ImplementedBy(classOf[AppConfigImpl])
-trait AppConfig {
-  val appName: String
-  val authBaseUrl: String
-  val agentServicesAccountUrl: URL
-}
+object UriPathEncoding {
 
-class AppConfigImpl @Inject()(config: ServicesConfig) extends AppConfig {
-  val appName = config.getString("appName")
-  val authBaseUrl = config.baseUrl("auth")
-  val agentServicesAccountUrl: URL = new URL(
-    config.baseUrl("agent-services-account"))
+  def encodePathSegment(pathSegment: String): String =
+    UriEncoding.encodePathSegment(pathSegment, UTF_8.name)
+
 }

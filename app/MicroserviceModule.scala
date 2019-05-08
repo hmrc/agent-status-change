@@ -5,10 +5,13 @@ import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.auth.DefaultAuthConnector
 import uk.gov.hmrc.play.bootstrap.http.{DefaultHttpClient, HttpClient}
 
-class MicroserviceModule(val environment: Environment, val configuration: Configuration) extends AbstractModule {
+class MicroserviceModule(val environment: Environment,
+                         val configuration: Configuration)
+    extends AbstractModule {
 
   def configure(): Unit = {
-    Logger(getClass).info(s"Starting microservice agent-status-change in mode : ${environment.mode}")
+    Logger(getClass).info(
+      s"Starting microservice agent-status-change in mode : ${environment.mode}")
 
     bind(classOf[HttpGet]).to(classOf[DefaultHttpClient])
     bind(classOf[HttpPost]).to(classOf[DefaultHttpClient])
