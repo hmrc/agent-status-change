@@ -34,7 +34,7 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with Eventually {
                              sessionId = Some(SessionId("dummy session id")),
                              requestId = Some(RequestId("dummy request id")))
 
-      val model = AgentDetails(Active, Some("John Smith"))
+      val model = AgentDetails(Active, "John Smith")
 
       await(
         service.sendGetAgentDetails(model, Arn("ARN0001"))(
