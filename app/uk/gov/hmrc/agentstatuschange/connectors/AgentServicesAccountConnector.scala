@@ -62,18 +62,4 @@ class AgentServicesAccountConnector @Inject()(appConfig: AppConfig,
         throw new NotFoundException(s"agency name not found for arn: $arn")
     }
 
-  def getAgencyNameByUtr(utr: Utr)(implicit hc: HeaderCarrier,
-                                   ec: ExecutionContext): Future[String] =
-    monitor(s"ConsumedAPI-Get-AgencyNameByUtr-GET") {
-      http
-        .GET[AgencyName](new URL(
-          appConfig.agentServicesAccountUrl,
-          s"/agent-services-account/client/agency-name/utr/${encodePathSegment(
-            utr.value)}").toString)
-        .map(_.name)
-    } recoverWith {
-      case _: NotFoundException =>
-        throw new NotFoundException(s"agency name not found for utr: $utr")
-    }
-
 }

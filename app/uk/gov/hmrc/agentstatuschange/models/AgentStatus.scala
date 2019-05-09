@@ -27,13 +27,15 @@ sealed trait AgentStatus {
 }
 
 case object Active extends AgentStatus
-case class Suspended(reason: String) extends AgentStatus
-case class Deactivated(reason: String) extends AgentStatus
+
+case class Suspended(reason: Reason) extends AgentStatus
+
+case class Deactivated(reason: Reason) extends AgentStatus
 
 object AgentStatus {
   implicit val format = new Format[AgentStatus] {
     override def reads(json: JsValue): JsResult[AgentStatus] = {
-      def readReason = (json \ "reason").as[String]
+      def readReason = (json \ "reason").as[Reason]
 
       val t = (json \ "type").as[String]
       t match {
@@ -45,12 +47,17 @@ object AgentStatus {
     }
 
     override def writes(status: AgentStatus): JsValue = {
-      val json: JsObject = Json.obj("type" -> status.key)
+      val jsonActive: JsObject = Json.obj("type" -> status.key)
+
+      def jsonNonActive(reason: Reason): JsObject = Json.obj(
+        "type" -> status.key,
+        "reason" -> reason,
+      )
 
       status match {
-        case Active              => json
-        case Suspended(reason)   => json + ("reason" -> JsString(reason))
-        case Deactivated(reason) => json + ("reason" -> JsString(reason))
+        case Active              => jsonActive
+        case Suspended(reason)   => jsonNonActive(reason)
+        case Deactivated(reason) => jsonNonActive(reason)
       }
     }
   }

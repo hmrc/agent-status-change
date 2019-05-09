@@ -24,21 +24,4 @@ trait AgentServicesAccountStub {
             .withStatus(404)
         ))
 
-  def givenAgencyNameUtr(utr: Utr, agencyName: String): Unit =
-    stubFor(
-      get(urlEqualTo(s"/agent-services-account/client/agency-name/utr/${utr.value}"))
-        .willReturn(
-          aResponse()
-            .withStatus(200)
-            .withBody(s"""{"agencyName": "$agencyName"}""")
-        ))
-
-  def givenAgencyNameUtrNotFound(utr: Utr): Unit =
-    stubFor(
-      get(urlEqualTo(s"/agent-services-account/client/agency-name/utr/${utr.value}"))
-        .willReturn(
-          aResponse()
-            .withStatus(404)
-        ))
-
 }

@@ -1,4 +1,4 @@
 # microservice specific routes
 GET         /status/arn/:arn                @uk.gov.hmrc.agentstatuschange.controllers.AgentStatusChangeController.getAgentDetailsByArn(arn: uk.gov.hmrc.agentmtdidentifiers.model.Arn)
 GET         /status/utr/:utr                @uk.gov.hmrc.agentstatuschange.controllers.AgentStatusChangeController.getAgentDetailsByUtr(utr: uk.gov.hmrc.agentmtdidentifiers.model.Utr)
-
+POST        /status/arn/:arn                 @uk.gov.hmrc.agentstatuschange.controllers.AgentStatusChangeController.changeStatus(arn: uk.gov.hmrc.agentmtdidentifiers.model.Arn)

@@ -5,13 +5,13 @@ import org.scalatestplus.play.ServerProvider
 import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
-import uk.gov.hmrc.agentstatuschange.models.{Active, AgentStatus, Suspended}
-import uk.gov.hmrc.agentstatuschange.stubs.AgentServicesAccountStub
-import uk.gov.hmrc.agentstatuschange.support.ServerBaseISpec
+import uk.gov.hmrc.agentstatuschange.models.Active
+import uk.gov.hmrc.agentstatuschange.stubs.{AgentServicesAccountStub, DesStubs}
+import uk.gov.hmrc.agentstatuschange.support.{DualSuite, MongoApp, ServerBaseISpec}
 
-class AgentStatusChangeControllerISpec extends ServerBaseISpec with AgentServicesAccountStub {
+class AgentStatusChangeControllerISpec extends ServerBaseISpec with AgentServicesAccountStub with MongoApp with DesStubs {
 
-  this: Suite with ServerProvider =>
+  this: Suite with ServerProvider with DualSuite =>
 
   val url = s"http://localhost:$port/agent-status-change"
 
@@ -40,13 +40,13 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with AgentService
         val result = getAgentDetailsByArn(arn.value)
         result.status shouldBe 200
         result.json shouldBe Json.obj("agentStatus" -> Active,
-        "agencyName" -> Some("Bing Bong"))
+          "agencyName" -> Some("Bing Bong"))
       }
     }
     "GET /status/utr/:utr" should {
       "respond with data when active" in {
-        givenAgencyNameUtr(utr, "Bong Bing")
-      val result = getAgentDetailsByUtr(utr.value)
+        givenBusinessPartnerRecordExistsFor(utr, arn, "Bong Bing")
+        val result = getAgentDetailsByUtr(utr.value)
         result.status shouldBe 200
         result.json shouldBe Json.obj("agentStatus" -> Active,
           "agencyName" -> Some("Bong Bing"))
