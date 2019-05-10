@@ -14,7 +14,6 @@ import uk.gov.hmrc.agentstatuschange.connectors.{
 import uk.gov.hmrc.agentstatuschange.models._
 import uk.gov.hmrc.agentstatuschange.services.AgentStatusChangeMongoService
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.domain.TaxIdentifier
 import uk.gov.hmrc.play.bootstrap.controller.BackendController
 
 import scala.concurrent.{ExecutionContext, Future}

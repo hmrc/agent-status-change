@@ -20,10 +20,12 @@ import com.google.inject.Singleton
 import javax.inject.Inject
 import org.joda.time.DateTime
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
+import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.indexes.{Index, IndexType}
 import reactivemongo.bson.BSONObjectID
-import uk.gov.hmrc.agentstatuschange.models.{AgentStatusChangeRecord}
+import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
+import uk.gov.hmrc.agentstatuschange.models.AgentStatusChangeRecord
 import uk.gov.hmrc.agentstatuschange.repository.StrictlyEnsureIndexes
 import uk.gov.hmrc.mongo.ReactiveRepository
 import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
@@ -37,7 +39,7 @@ class AgentStatusChangeMongoService @Inject()(
     extends ReactiveRepository[AgentStatusChangeRecord, BSONObjectID](
       "agent-status-change",
       mongoComponent.mongoConnector.db,
-      AgentStatusChangeRecord.agentStatusChangeRecordFormat,
+      AgentStatusChangeRecord.format,
       ReactiveMongoFormats.objectIdFormats)
     with StrictlyEnsureIndexes[AgentStatusChangeRecord, BSONObjectID] {
 
@@ -54,14 +56,17 @@ class AgentStatusChangeMongoService @Inject()(
 
   def findCurrentRecordByArn(arn: String)(
       implicit ec: ExecutionContext,
-      ord: Ordering[DateTime]): Future[Option[AgentStatusChangeRecord]] =
-    for {
-      recordOpt <- find("arn" -> arn)
-      result = recordOpt match {
-        case Nil => None
-        case x   => Some(x.maxBy(_.lastUpdated))
-      }
-    } yield result
+      ord: Ordering[DateTime]): Future[Option[AgentStatusChangeRecord]] = {
+
+    val selector = Json.obj("arn" -> Json.toJson(arn))
+    val descending = -1
+    val sort = Json.obj("lastUpdated" -> JsNumber(descending))
+
+    collection
+      .find(selector, projection = None)
+      .sort(sort)
+      .one[AgentStatusChangeRecord]
+  }
 
   def createRecord(agentStatusChangeRecord: AgentStatusChangeRecord)(
       implicit ec: ExecutionContext): Future[Unit] =
