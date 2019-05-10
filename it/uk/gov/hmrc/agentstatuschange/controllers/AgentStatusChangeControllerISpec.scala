@@ -1,26 +1,27 @@
 package uk.gov.hmrc.agentstatuschange.controllers
 
 import akka.util.Timeout
-import org.joda.time.{DateTime, LocalDate}
-import play.api.libs.json.Json
+import org.joda.time.DateTime
+import play.api.libs.json.{JsString, Json}
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.contentAsJson
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 import uk.gov.hmrc.agentstatuschange.models._
 import uk.gov.hmrc.agentstatuschange.services.AgentStatusChangeMongoService
-import uk.gov.hmrc.agentstatuschange.stubs.{AgentServicesAccountStub, DesStubs}
+import uk.gov.hmrc.agentstatuschange.stubs.DesStubs
 import uk.gov.hmrc.agentstatuschange.support.{DualSuite, MongoApp, ServerBaseISpec}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration.Duration
 
-class AgentStatusChangeControllerISpec extends ServerBaseISpec with AgentServicesAccountStub with MongoApp with DesStubs {
+class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp with DesStubs {
 
   this: DualSuite =>
 
   val controller = app.injector.instanceOf(classOf[AgentStatusChangeController])
+
   def repo: AgentStatusChangeMongoService = app.injector.instanceOf[AgentStatusChangeMongoService]
 
   val arn = Arn("TARN0000001")
@@ -31,34 +32,46 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with AgentService
 
   "AgentStatusChangeController" when {
     "GET /status/arn/:arn" should {
-      "respond with default stubbed data when no record exists" in {
-        givenAgencyNameArn(arn, "Bing Bong")
+      "respond 200 with default stubbed data when no record exists" in {
+        givenBusinessPartnerRecordExistsFor("arn", utr, arn, "Bing Bing")
         val result = controller.getAgentDetailsByArn(arn)(FakeRequest())
         status(result) shouldBe 200
         contentAsJson(result) shouldBe Json.obj("agentStatus" -> Active,
-          "agencyName" -> Some("Bing Bong"))
+          "agencyName" -> Some("Bing Bing"))
       }
 
-      "respond with data when a suspended record exists" in {
+      "respond 200 with data when a suspended record exists" in {
         await(repo.createRecord(AgentStatusChangeRecord(arn, Suspended(Reason(Some("other"), Some("eaten by tyrannosaur"))), DateTime.parse("2019-01-01"))))
-        givenAgencyNameArn(arn, "Bing Bong")
+        givenBusinessPartnerRecordExistsFor("arn", utr, arn, "Bong Bing")
         val result = controller.getAgentDetailsByArn(arn)(FakeRequest())
         status(result) shouldBe 200
         contentAsJson(result) shouldBe Json.obj("agentStatus" -> Suspended(Reason(Some("other"), Some("eaten by tyrannosaur"))),
-          "agencyName" -> Some("Bing Bong"))
+          "agencyName" -> Some("Bong Bing"))
       }
-      "respond with data when a deactivated record exists" in {
+      "respond 200 with data when a deactivated record exists" in {
         await(repo.createRecord(AgentStatusChangeRecord(arn, Deactivated(Reason(Some("other"), Some("brain in jar"))), DateTime.parse("2019-01-01"))))
-        givenAgencyNameArn(arn, "Bing Bong")
+        givenBusinessPartnerRecordExistsFor("arn", utr, arn, "Bong Bing")
         val result = controller.getAgentDetailsByArn(arn)(FakeRequest())
         status(result) shouldBe 200
         contentAsJson(result) shouldBe Json.obj("agentStatus" -> Deactivated(Reason(Some("other"), Some("brain in jar"))),
-          "agencyName" -> Some("Bing Bong"))
+          "agencyName" -> Some("Bong Bing"))
+      }
+      "respond 404 with reason when record does not exist" in {
+        givenBusinessPartnerRecordNotFoundFor("arn", utr, arn, "")
+        val result = controller.getAgentDetailsByArn(arn)(FakeRequest())
+        status(result) shouldBe 404
+        contentAsJson(result) shouldBe JsString("UTR_NOT_SUBSCRIBED")
+      }
+      "respond 400 with reason when utr is invalid" in {
+        givenBusinessPartnerRecordInvalidFor("arn", utr, arn, "")
+        val result = controller.getAgentDetailsByArn(arn)(FakeRequest())
+        status(result) shouldBe 400
+        contentAsJson(result) shouldBe JsString("INVALID_UTR")
       }
     }
     "GET /status/utr/:utr" should {
       "respond with data when active" in {
-        givenBusinessPartnerRecordExistsFor(utr, arn, "Bong Bing")
+        givenBusinessPartnerRecordExistsFor("utr", utr, arn, "Bong Bing")
         val result = controller.getAgentDetailsByUtr(utr)(FakeRequest())
         status(result) shouldBe 200
         contentAsJson(result) shouldBe Json.obj("agentStatus" -> Active,
@@ -66,7 +79,7 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with AgentService
       }
       "respond with data when a suspended record exists" in {
         await(repo.createRecord(AgentStatusChangeRecord(arn, Suspended(Reason(Some("other"), Some("eaten by tyrannosaur"))), DateTime.parse("2019-01-01"))))
-        givenBusinessPartnerRecordExistsFor(utr, arn, "Bong Bing")
+        givenBusinessPartnerRecordExistsFor("utr", utr, arn, "Bong Bing")
         val result = controller.getAgentDetailsByUtr(utr)(FakeRequest())
         status(result) shouldBe 200
         contentAsJson(result) shouldBe Json.obj("agentStatus" -> Suspended(Reason(Some("other"), Some("eaten by tyrannosaur"))),
@@ -74,11 +87,23 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with AgentService
       }
       "respond with data when a deactivated record exists" in {
         await(repo.createRecord(AgentStatusChangeRecord(arn, Deactivated(Reason(Some("other"), Some("brain in jar"))), DateTime.parse("2019-01-01"))))
-        givenBusinessPartnerRecordExistsFor(utr, arn, "Bong Bing")
+        givenBusinessPartnerRecordExistsFor("utr", utr, arn, "Bong Bing")
         val result = controller.getAgentDetailsByUtr(utr)(FakeRequest())
         status(result) shouldBe 200
         contentAsJson(result) shouldBe Json.obj("agentStatus" -> Deactivated(Reason(Some("other"), Some("brain in jar"))),
           "agencyName" -> Some("Bong Bing"))
+      }
+      "respond 404 with reason when record does not exist" in {
+        givenBusinessPartnerRecordNotFoundFor("utr", utr, arn, "")
+        val result = controller.getAgentDetailsByUtr(utr)(FakeRequest())
+        status(result) shouldBe 404
+        contentAsJson(result) shouldBe JsString("UTR_NOT_SUBSCRIBED")
+      }
+      "respond 400 with reason when utr is invalid" in {
+        givenBusinessPartnerRecordInvalidFor("utr", utr, arn, "")
+        val result = controller.getAgentDetailsByUtr(utr)(FakeRequest())
+        status(result) shouldBe 400
+        contentAsJson(result) shouldBe JsString("INVALID_UTR")
       }
     }
     "POST /status/arn/:arn" should {

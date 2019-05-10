@@ -10,8 +10,11 @@ trait DesStubs {
 
   me: WireMockSupport =>
 
-  def givenBusinessPartnerRecordExistsFor(utr: Utr, arn: Arn, agencyName: String): StubMapping =
-    stubFor(get(urlEqualTo(s"/registration/personal-details/utr/${utr.value}"))
+  def givenBusinessPartnerRecordExistsFor(idType: String, utr: Utr, arn: Arn, agencyName: String): StubMapping =
+    stubFor(get(urlEqualTo(idType match {
+      case "arn" => s"/registration/personal-details/arn/${arn.value}"
+      case "utr" => s"/registration/personal-details/utr/${utr.value}"
+    }))
     .willReturn(aResponse()
     .withStatus(200)
     .withBody(
@@ -59,5 +62,21 @@ trait DesStubs {
          |  "id" : "5cb5cd7f1800006589a83ac5"
          |}
             """.stripMargin)))
+
+  def givenBusinessPartnerRecordNotFoundFor(idType: String, utr: Utr, arn: Arn, agencyName: String): StubMapping =
+    stubFor(get(urlEqualTo(idType match {
+      case "arn" => s"/registration/personal-details/arn/${arn.value}"
+      case "utr" => s"/registration/personal-details/utr/${utr.value}"
+    }))
+      .willReturn(aResponse()
+        .withStatus(404)))
+
+  def givenBusinessPartnerRecordInvalidFor(idType: String, utr: Utr, arn: Arn, agencyName: String): StubMapping =
+    stubFor(get(urlEqualTo(idType match {
+      case "arn" => s"/registration/personal-details/arn/${arn.value}"
+      case "utr" => s"/registration/personal-details/utr/${utr.value}"
+    }))
+      .willReturn(aResponse()
+        .withStatus(400)))
 
 }

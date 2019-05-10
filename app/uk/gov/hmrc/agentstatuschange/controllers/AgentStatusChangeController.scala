@@ -8,12 +8,15 @@ import play.api.mvc._
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 import uk.gov.hmrc.agentstatuschange.connectors.{
-  AgentServicesAccountConnector,
-  DesConnector
+  DesConnector,
+  Invalid,
+  Unsubscribed
 }
 import uk.gov.hmrc.agentstatuschange.models._
 import uk.gov.hmrc.agentstatuschange.services.AgentStatusChangeMongoService
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.domain.TaxIdentifier
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.BackendController
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -21,7 +24,6 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class AgentStatusChangeController @Inject()(
     override val authConnector: AuthConnector,
-    agentServicesAccountConnector: AgentServicesAccountConnector,
     desConnector: DesConnector,
     agentStatusChangeMongoService: AgentStatusChangeMongoService,
     cc: ControllerComponents,
@@ -29,7 +31,6 @@ class AgentStatusChangeController @Inject()(
     extends BackendController(cc)
     with AuthActions {
 
-  import agentServicesAccountConnector._
   import agentStatusChangeMongoService._
   import desConnector._
 
@@ -47,37 +48,43 @@ class AgentStatusChangeController @Inject()(
 
   def getAgentDetailsByArn(arn: Arn): Action[AnyContent] = Action.async {
     implicit request =>
-      for {
-        agencyName <- getAgencyNameByArn(arn)
-        recordOpt <- findCurrentRecordByArn(arn.value)
-        statusToReturn <- recordOpt match {
-          case Some(record) => Future successful record.status
-          case None =>
-            for {
-              _ <- agentStatusChangeMongoService.createRecord(
-                AgentStatusChangeRecord(arn, stubbedStatus, DateTime.now()))
-            } yield stubbedStatus
-        }
-      } yield Ok(toJson(AgentDetails(statusToReturn, agencyName)))
+      getAgentDetails(arn)
   }
 
   def getAgentDetailsByUtr(utr: Utr): Action[AnyContent] = Action.async {
     implicit request =>
-      for {
-        arnAndAgencyName <- getArnAndAgencyNameFor(utr)
-        recordOpt <- findCurrentRecordByArn(arnAndAgencyName.arn.value)
-        statusToReturn <- recordOpt match {
-          case Some(record) => Future successful record.status
-          case None =>
-            for {
-              _ <- agentStatusChangeMongoService.createRecord(
-                AgentStatusChangeRecord(arnAndAgencyName.arn,
-                                        stubbedStatus,
-                                        DateTime.now()))
-            } yield stubbedStatus
-        }
-      } yield
-        Ok(toJson(AgentDetails(statusToReturn, arnAndAgencyName.agencyName)))
+      getAgentDetails(utr)
+  }
+
+  def getAgentDetails[T <: TaxIdentifier](agentId: T)(
+      implicit hc: HeaderCarrier) = {
+    for {
+      arnAndAgencyName <- getArnAndAgencyNameFor(agentId)
+      result <- arnAndAgencyName match {
+        case Right(arnAndName) =>
+          for {
+            recordOpt <- findCurrentRecordByArn(arnAndName.arn.value)
+            statusToReturn <- recordOpt match {
+              case Some(record) => Future successful record.status
+              case None =>
+                for {
+                  _ <- agentStatusChangeMongoService.createRecord(
+                    AgentStatusChangeRecord(arnAndName.arn,
+                                            stubbedStatus,
+                                            DateTime.now()))
+                } yield stubbedStatus
+            }
+          } yield
+            Ok(toJson(AgentDetails(statusToReturn, arnAndName.agencyName)))
+        case Left(err) =>
+          err match {
+            case Unsubscribed(detail) =>
+              Future successful NotFound(toJson(detail))
+            case Invalid(detail) =>
+              Future successful BadRequest(toJson(detail))
+          }
+      }
+    } yield result
   }
 
   def changeStatus(arn: Arn): Action[JsValue] =

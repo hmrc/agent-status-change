@@ -38,11 +38,6 @@ trait UpstreamServicesStubs extends BeforeAndAfterAll
     super.beforeEach()
     reset()
     givenAuthReturnsUserDetails()
-    givenImplicitAuditEvents()
-  }
-
-  def givenImplicitAuditEvents() = {
-    stubFor(post(urlPathEqualTo("/write/audit/merged")).willReturn(aResponse().withStatus(204)))
   }
 
   def givenAuthReturnsUserDetails(): Unit = {
