@@ -7,7 +7,7 @@ lazy val scoverageSettings = {
   Seq(
     // Semicolon-separated list of regexs matching classes to exclude
     ScoverageKeys.coverageExcludedPackages := """uk\.gov\.hmrc\.BuildInfo;.*\.Routes;.*\.RoutesPrefix;.*Filters?;MicroserviceAuditConnector;Module;GraphiteStartUp;.*\.Reverse[^.]*""",
-    ScoverageKeys.coverageMinimum := 80.00,
+    ScoverageKeys.coverageMinimum := 75.00,
     ScoverageKeys.coverageFailOnMinimum := false,
     ScoverageKeys.coverageHighlighting := true,
     parallelExecution in Test := false
@@ -25,6 +25,7 @@ lazy val compileDeps = Seq(
   "com.github.blemale" %% "scaffeine" % "2.6.0",
   "com.typesafe.play" %% "play-json" % "2.6.13",
   "com.typesafe.play" %% "play-json-joda" % "2.6.13",
+  "uk.gov.hmrc" %% "simple-reactivemongo" % "7.19.0-play-26",
   ws
 )
 
@@ -33,7 +34,8 @@ def testDeps(scope: String) = Seq(
   "org.scalatest" %% "scalatest" % "3.0.7" % scope,
   "org.mockito" % "mockito-core" % "2.27.0" % scope,
   "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % scope,
-  "com.github.tomakehurst" % "wiremock" % "2.23.2" % scope
+  "com.github.tomakehurst" % "wiremock" % "2.23.2" % scope,
+  "uk.gov.hmrc" %% "reactivemongo-test" % "4.13.0-play-26" % scope
 )
 
 val jettyVersion = "9.2.24.v20180105"

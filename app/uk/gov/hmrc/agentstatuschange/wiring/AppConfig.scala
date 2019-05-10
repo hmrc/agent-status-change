@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentstatuschange.wiring
 
-import java.net.{URL, URLDecoder}
+import java.net.URL
 
 import com.google.inject.ImplementedBy
 import javax.inject.Inject
@@ -26,10 +26,12 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 trait AppConfig {
   val appName: String
   val agentServicesAccountUrl: URL
+  val desUrl: URL
 }
 
 class AppConfigImpl @Inject()(config: ServicesConfig) extends AppConfig {
   val appName = config.getString("appName")
   val agentServicesAccountUrl: URL = new URL(
     config.baseUrl("agent-services-account"))
+  val desUrl: URL = new URL(config.baseUrl("des"))
 }
