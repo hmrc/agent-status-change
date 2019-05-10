@@ -31,6 +31,7 @@ class AgentStatusChangeController @Inject()(
 
   import agentServicesAccountConnector._
   import agentStatusChangeMongoService._
+  import desConnector._
 
   val configStubStatus = config.getOptional[String]("test.stubbed.status")
   val stubStatus = configStubStatus.getOrElse("Active")
@@ -63,7 +64,7 @@ class AgentStatusChangeController @Inject()(
   def getAgentDetailsByUtr(utr: Utr): Action[AnyContent] = Action.async {
     implicit request =>
       for {
-        arnAndAgencyName <- desConnector.getArnAndAgencyNameFor(utr)
+        arnAndAgencyName <- getArnAndAgencyNameFor(utr)
         recordOpt <- findCurrentRecordByArn(arnAndAgencyName.arn.value)
         statusToReturn <- recordOpt match {
           case Some(record) => Future successful record.status
