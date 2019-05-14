@@ -27,6 +27,8 @@ trait AppConfig {
   val appName: String
   val agentServicesAccountUrl: URL
   val desUrl: URL
+  val desAuthorizationToken: String
+  val desEnvironment: String
 }
 
 class AppConfigImpl @Inject()(config: ServicesConfig) extends AppConfig {
@@ -34,4 +36,7 @@ class AppConfigImpl @Inject()(config: ServicesConfig) extends AppConfig {
   val agentServicesAccountUrl: URL = new URL(
     config.baseUrl("agent-services-account"))
   val desUrl: URL = new URL(config.baseUrl("des"))
+  val desAuthorizationToken =
+    config.getString("microservice.services.des.authorization-token")
+  val desEnvironment = config.getString("microservice.services.des.environment")
 }
