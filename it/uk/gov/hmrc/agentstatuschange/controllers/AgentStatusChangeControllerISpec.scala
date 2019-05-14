@@ -36,7 +36,7 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp wit
         givenBusinessPartnerRecordExistsFor("arn", utr, arn, "Bing Bing")
         val result = controller.getAgentDetailsByArn(arn)(FakeRequest())
         status(result) shouldBe 200
-        contentAsJson(result) shouldBe Json.obj("agentStatus" -> Active,
+        contentAsJson(result) shouldBe Json.obj("arn" -> arn, "agentStatus" -> Active,
           "agencyName" -> Some("Bing Bing"))
       }
 
@@ -45,7 +45,7 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp wit
         givenBusinessPartnerRecordExistsFor("arn", utr, arn, "Bong Bing")
         val result = controller.getAgentDetailsByArn(arn)(FakeRequest())
         status(result) shouldBe 200
-        contentAsJson(result) shouldBe Json.obj("agentStatus" -> Suspended(Reason(Some("other"), Some("eaten by tyrannosaur"))),
+        contentAsJson(result) shouldBe Json.obj("arn" -> arn, "agentStatus" -> Suspended(Reason(Some("other"), Some("eaten by tyrannosaur"))),
           "agencyName" -> Some("Bong Bing"))
       }
       "respond 200 with data when a deactivated record exists" in {
@@ -53,7 +53,7 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp wit
         givenBusinessPartnerRecordExistsFor("arn", utr, arn, "Bong Bing")
         val result = controller.getAgentDetailsByArn(arn)(FakeRequest())
         status(result) shouldBe 200
-        contentAsJson(result) shouldBe Json.obj("agentStatus" -> Deactivated(Reason(Some("other"), Some("brain in jar"))),
+        contentAsJson(result) shouldBe Json.obj("arn" -> arn, "agentStatus" -> Deactivated(Reason(Some("other"), Some("brain in jar"))),
           "agencyName" -> Some("Bong Bing"))
       }
       "respond 404 with reason when record does not exist" in {
@@ -74,7 +74,7 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp wit
         givenBusinessPartnerRecordExistsFor("utr", utr, arn, "Bong Bing")
         val result = controller.getAgentDetailsByUtr(utr)(FakeRequest())
         status(result) shouldBe 200
-        contentAsJson(result) shouldBe Json.obj("agentStatus" -> Active,
+        contentAsJson(result) shouldBe Json.obj("arn" -> arn, "agentStatus" -> Active,
           "agencyName" -> Some("Bong Bing"))
       }
       "respond with data when a suspended record exists" in {
@@ -82,7 +82,7 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp wit
         givenBusinessPartnerRecordExistsFor("utr", utr, arn, "Bong Bing")
         val result = controller.getAgentDetailsByUtr(utr)(FakeRequest())
         status(result) shouldBe 200
-        contentAsJson(result) shouldBe Json.obj("agentStatus" -> Suspended(Reason(Some("other"), Some("eaten by tyrannosaur"))),
+        contentAsJson(result) shouldBe Json.obj("arn" -> arn, "agentStatus" -> Suspended(Reason(Some("other"), Some("eaten by tyrannosaur"))),
           "agencyName" -> Some("Bong Bing"))
       }
       "respond with data when a deactivated record exists" in {
@@ -90,7 +90,7 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp wit
         givenBusinessPartnerRecordExistsFor("utr", utr, arn, "Bong Bing")
         val result = controller.getAgentDetailsByUtr(utr)(FakeRequest())
         status(result) shouldBe 200
-        contentAsJson(result) shouldBe Json.obj("agentStatus" -> Deactivated(Reason(Some("other"), Some("brain in jar"))),
+        contentAsJson(result) shouldBe Json.obj("arn" -> arn, "agentStatus" -> Deactivated(Reason(Some("other"), Some("brain in jar"))),
           "agencyName" -> Some("Bong Bing"))
       }
       "respond 404 with reason when record does not exist" in {

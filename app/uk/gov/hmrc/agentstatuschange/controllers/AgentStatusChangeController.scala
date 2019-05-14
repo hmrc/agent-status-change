@@ -75,7 +75,11 @@ class AgentStatusChangeController @Inject()(
                 } yield stubbedStatus
             }
           } yield
-            Ok(toJson(AgentDetails(statusToReturn, arnAndName.agencyName)))
+            Ok(
+              toJson(
+                AgentDetails(arnAndName.arn,
+                             statusToReturn,
+                             arnAndName.agencyName)))
         case Left(err) =>
           err match {
             case Unsubscribed(detail) =>
