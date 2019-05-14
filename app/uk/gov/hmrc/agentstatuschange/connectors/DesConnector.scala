@@ -11,12 +11,15 @@ import uk.gov.hmrc.agentstatuschange.UriPathEncoding.encodePathSegment
 import uk.gov.hmrc.agentstatuschange.models.ArnAndAgencyName
 import uk.gov.hmrc.agentstatuschange.wiring.AppConfig
 import uk.gov.hmrc.domain.TaxIdentifier
+import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, HttpPost, _}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 sealed trait ErrorCase
+
 case class Unsubscribed(detail: String) extends ErrorCase
+
 case class Invalid(detail: String) extends ErrorCase
 
 class DesConnector @Inject()(appConfig: AppConfig,
@@ -37,14 +40,24 @@ class DesConnector @Inject()(appConfig: AppConfig,
         s"/registration/personal-details/utr/${encodePathSegment(agentIdentifier.value)}"
     }
 
-    monitor(s"ConsumedAPI-GetArnAndAgencyName-GET") {
-      http
-        .GET[ArnAndAgencyName](new URL(appConfig.desUrl, url).toString)
-        .map(record => Right(record))
-    }.recover {
-      case _: NotFoundException   => Left(Unsubscribed("UTR_NOT_SUBSCRIBED"))
-      case _: BadRequestException => Left(Invalid("INVALID_UTR"))
-      case e                      => throw new Exception(s"exception: ${e.getMessage}")
+    getWithDesHeaders[ArnAndAgencyName]("GetArnAndAgencyName",
+                                        new URL(appConfig.desUrl, url))
+      .map(record => Right(record))
+  }.recover {
+    case _: NotFoundException   => Left(Unsubscribed("UTR_NOT_SUBSCRIBED"))
+    case _: BadRequestException => Left(Invalid("INVALID_UTR"))
+    case e                      => throw new Exception(s"exception: ${e.getMessage}")
+  }
+
+  private def getWithDesHeaders[A: HttpReads](apiName: String, url: URL)(
+      implicit hc: HeaderCarrier,
+      ec: ExecutionContext): Future[A] = {
+    val desHeaderCarrier = hc.copy(
+      authorization =
+        Some(Authorization(s"Bearer ${appConfig.desAuthorizationToken}")),
+      extraHeaders = hc.extraHeaders :+ "Environment" -> appConfig.desEnvironment)
+    monitor(s"ConsumedAPI-DES-$apiName-GET") {
+      http.GET[A](url.toString)(implicitly[HttpReads[A]], desHeaderCarrier, ec)
     }
   }
 }
