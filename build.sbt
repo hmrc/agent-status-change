@@ -7,8 +7,8 @@ lazy val scoverageSettings = {
   Seq(
     // Semicolon-separated list of regexs matching classes to exclude
     ScoverageKeys.coverageExcludedPackages := """uk\.gov\.hmrc\.BuildInfo;.*\.Routes;.*\.RoutesPrefix;.*Filters?;MicroserviceAuditConnector;Module;GraphiteStartUp;.*\.Reverse[^.]*""",
-    ScoverageKeys.coverageMinimum := 75.00,
-    ScoverageKeys.coverageFailOnMinimum := false,
+    ScoverageKeys.coverageMinimum := 77.00,
+    ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true,
     parallelExecution in Test := false
   )
@@ -62,6 +62,16 @@ lazy val root = (project in file("."))
     name := "agent-status-change",
     organization := "uk.gov.hmrc",
     scalaVersion := "2.12.8",
+    scalacOptions ++= Seq(
+      //"-Xfatal-warnings",
+      "-Xlint:-missing-interpolator,_",
+      "-Yno-adapted-args",
+      "-Ywarn-value-discard",
+      "-Ywarn-dead-code",
+      "-deprecation",
+      "-feature",
+      "-unchecked",
+      "-language:implicitConversions"),
     PlayKeys.playDefaultPort := 9424,
     resolvers := Seq(
       Resolver.bintrayRepo("hmrc", "releases"),
@@ -84,7 +94,6 @@ lazy val root = (project in file("."))
     Defaults.itSettings,
     unmanagedSourceDirectories in IntegrationTest += baseDirectory(_ / "it").value,
     parallelExecution in IntegrationTest := false,
-    testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value),
     scalafmtOnCompile in IntegrationTest := true,
     majorVersion := 0
   )
@@ -92,9 +101,3 @@ lazy val root = (project in file("."))
 
 
 inConfig(IntegrationTest)(scalafmtCoreSettings)
-
-def oneForkedJvmPerTest(tests: Seq[TestDefinition]) = {
-  tests.map { test =>
-    new Group(test.name, Seq(test), SubProcess(ForkOptions(runJVMOptions = Seq(s"-Dtest.name=${test.name}"))))
-  }
-}

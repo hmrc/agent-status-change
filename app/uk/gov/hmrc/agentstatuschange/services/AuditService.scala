@@ -26,7 +26,7 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
   def sendGetAgentDetails(model: AgentDetails, agentReference: Arn)(
       implicit hc: HeaderCarrier,
       request: Request[Any],
-      ec: ExecutionContext): Unit =
+      ec: ExecutionContext): Future[Unit] =
     auditEvent(
       AgentstatuschangeEvent.GetAgentDetails,
       "get-agent-details",
@@ -49,8 +49,7 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
                                     transactionName: String,
                                     details: (String, Any)*)(
       implicit hc: HeaderCarrier,
-      request: Request[Any],
-      ec: ExecutionContext): DataEvent = {
+      request: Request[Any]): DataEvent = {
 
     val detail =
       hc.toAuditDetails(details.map(pair => pair._1 -> pair._2.toString): _*)

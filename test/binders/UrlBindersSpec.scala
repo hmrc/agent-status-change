@@ -16,14 +16,13 @@
 
 package binders
 
-import org.scalatestplus.play.OneAppPerSuite
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 import uk.gov.hmrc.agentstatuschange.binders.UrlBinders
 import uk.gov.hmrc.play.test.UnitSpec
 
-class UrlBindersSpec extends UnitSpec with OneAppPerSuite {
+class UrlBindersSpec extends UnitSpec with GuiceOneAppPerSuite {
 
-  private val error = Left("cannot parse parameter")
   val utr = Utr("3110118001")
   val arn = Arn("TARN0000001")
 

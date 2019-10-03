@@ -54,9 +54,8 @@ class AgentStatusChangeMongoService @Inject()(
   implicit val ord: Ordering[DateTime] =
     Ordering.by(time => time.getMillis)
 
-  def findCurrentRecordByArn(arn: String)(
-      implicit ec: ExecutionContext,
-      ord: Ordering[DateTime]): Future[Option[AgentStatusChangeRecord]] = {
+  def findCurrentRecordByArn(arn: String)(implicit ec: ExecutionContext)
+    : Future[Option[AgentStatusChangeRecord]] = {
 
     val selector = Json.obj("arn" -> Json.toJson(arn))
     val descending = -1

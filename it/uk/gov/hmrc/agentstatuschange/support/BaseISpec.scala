@@ -18,6 +18,7 @@ abstract class BaseISpec extends UnitSpec with WireMockSupport with AuthStubs wi
   override def commonStubs(): Unit = {
     givenCleanMetricRegistry()
     givenAuditConnector()
+    ()
   }
 
   protected implicit val materializer = app.materializer
@@ -27,6 +28,7 @@ abstract class BaseISpec extends UnitSpec with WireMockSupport with AuthStubs wi
     contentType(result) shouldBe Some("text/html")
     charset(result) shouldBe Some("utf-8")
     bodyOf(result) should include(expectedSubstring)
+    ()
   }
 
   private val messagesApi = app.injector.instanceOf[MessagesApi]

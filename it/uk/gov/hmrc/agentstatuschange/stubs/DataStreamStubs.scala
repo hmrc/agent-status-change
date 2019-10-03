@@ -1,9 +1,10 @@
 package uk.gov.hmrc.agentstatuschange.stubs
 
 import org.scalatest.concurrent.Eventually
-import org.scalatest.time.{ Millis, Seconds, Span }
+import org.scalatest.time.{Millis, Seconds, Span}
 import play.api.libs.json.Json
 import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import uk.gov.hmrc.agentstatuschange.services.AgentstatuschangeEvent.AgentstatuschangeEvent
 import uk.gov.hmrc.agentstatuschange.support.WireMockSupport
 
@@ -36,7 +37,7 @@ trait DataStreamStubs extends Eventually {
     }
   }
 
-  def givenAuditConnector(): Unit = {
+  def givenAuditConnector(): StubMapping = {
     stubFor(post(urlPathEqualTo(auditUrl)).willReturn(aResponse().withStatus(204)))
     stubFor(post(urlPathEqualTo(auditUrl + "/merged")).willReturn(aResponse().withStatus(204)))
   }
