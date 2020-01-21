@@ -9,14 +9,15 @@ import play.api.test.Helpers.contentAsJson
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 import uk.gov.hmrc.agentstatuschange.models._
 import uk.gov.hmrc.agentstatuschange.services.AgentStatusChangeMongoService
-import uk.gov.hmrc.agentstatuschange.stubs.DesStubs
+import uk.gov.hmrc.agentstatuschange.stubs.{AgentStubs, DesStubs}
 import uk.gov.hmrc.agentstatuschange.support.{DualSuite, MongoApp, ServerBaseISpec}
+import uk.gov.hmrc.http.SessionKeys
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration.Duration
 
-class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp with DesStubs {
+class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp with DesStubs with AgentStubs {
 
   this: DualSuite =>
 
@@ -24,7 +25,6 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp wit
 
   def repo: AgentStatusChangeMongoService = app.injector.instanceOf[AgentStatusChangeMongoService]
 
-  val arn = Arn("TARN0000001")
   val utr = Utr("3110118001")
   implicit val timeout: Timeout = Timeout(Duration.Zero)
   implicit val ord: Ordering[DateTime] =
@@ -127,6 +127,50 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp wit
         val result: Future[Result] = controller.changeStatus(arn)(request.withBody(requestBody))
         status(result) shouldBe 200
         await(repo.findCurrentRecordByArn(arn.value)).get.status shouldBe Active
+      }
+    }
+
+    "DELETE /agent/:arn/terminate" should {
+      "return 200 for deleting all agent records" in {
+        givenSuccessfullyRemoveInvitations(arn)
+        givenSuccessfullyRemoveAFiRelationships(arn)
+        givenSuccessfullyRemoveMapping(arn)
+
+        givenOnlyStrideStub("caat", "1234")
+        val result = controller.removeAgentRecords(arn)(FakeRequest("DELETE", "agent/:arn/terminate").withSession(SessionKeys.authToken -> "Bearer XYZ"))
+
+        status(result) shouldBe 200
+      }
+
+      "return 400 for invalid ARN" in {
+        givenSuccessfullyRemoveInvitations(arn)
+        givenSuccessfullyRemoveAFiRelationships(arn)
+        givenSuccessfullyRemoveMapping(arn)
+
+        givenOnlyStrideStub("caat", "1234")
+        val result = controller.removeAgentRecords(Arn("MARN01"))(FakeRequest("DELETE", "agent/:arn/terminate").withSession(SessionKeys.authToken -> "Bearer XYZ"))
+
+        status(result) shouldBe 400
+      }
+
+      "return 500 for complete error" in {
+        givenInternalServerErrorRemoveInvitations(arn)
+        givenInternalServerErrorIRemoveAFiRelationships(arn)
+        givenInternalServerErrorRemoveMapping(arn)
+        givenOnlyStrideStub("caat", "1234")
+        val result = controller.removeAgentRecords(arn)(FakeRequest("DELETE", "agent/:arn/terminate").withSession(SessionKeys.authToken -> "Bearer XYZ"))
+
+        status(result) shouldBe 500
+      }
+
+      "return 500 for partial error" in {
+        givenSuccessfullyRemoveInvitations(arn)
+        givenSuccessfullyRemoveAFiRelationships(arn)
+        givenInternalServerErrorRemoveMapping(arn)
+        givenOnlyStrideStub("caat", "1234")
+        val result = controller.removeAgentRecords(arn)(FakeRequest("DELETE", "agent/:arn/terminate").withSession(SessionKeys.authToken -> "Bearer XYZ"))
+
+        status(result) shouldBe 500
       }
     }
   }

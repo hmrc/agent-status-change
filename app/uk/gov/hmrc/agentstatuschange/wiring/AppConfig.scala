@@ -28,12 +28,27 @@ trait AppConfig {
   val desUrl: URL
   val desAuthorizationToken: String
   val desEnvironment: String
+  val agentClientAuthorisationBaseUrl: String
+  val agentFiRelationshipBaseUrl: String
+  val agentMappibngBaseUrl: String
+  val terminationStrideRole: String
 }
 
 class AppConfigImpl @Inject()(config: ServicesConfig) extends AppConfig {
   val appName = config.getString("appName")
   val desUrl: URL = new URL(config.baseUrl("des"))
-  val desAuthorizationToken =
+  val desAuthorizationToken: String =
     config.getString("microservice.services.des.authorization-token")
-  val desEnvironment = config.getString("microservice.services.des.environment")
+  val desEnvironment: String =
+    config.getString("microservice.services.des.environment")
+
+  val agentClientAuthorisationBaseUrl: String =
+    config.baseUrl("agent-client-authorisation")
+  val agentFiRelationshipBaseUrl: String =
+    config.baseUrl("agent-fi-relationship")
+  val agentMappibngBaseUrl: String =
+    config.baseUrl("agent-mapping")
+
+  val terminationStrideRole: String =
+    config.getString("termination.stride.enrolment")
 }
