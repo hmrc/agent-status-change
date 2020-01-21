@@ -30,7 +30,7 @@ trait AppConfig {
   val desEnvironment: String
   val agentClientAuthorisationBaseUrl: String
   val agentFiRelationshipBaseUrl: String
-  val agentMappibngBaseUrl: String
+  val agentMappingBaseUrl: String
   val terminationStrideRole: String
 }
 
@@ -46,7 +46,7 @@ class AppConfigImpl @Inject()(config: ServicesConfig) extends AppConfig {
     config.baseUrl("agent-client-authorisation")
   val agentFiRelationshipBaseUrl: String =
     config.baseUrl("agent-fi-relationship")
-  val agentMappibngBaseUrl: String =
+  val agentMappingBaseUrl: String =
     config.baseUrl("agent-mapping")
 
   val terminationStrideRole: String =

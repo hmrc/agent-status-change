@@ -19,7 +19,7 @@ class AgentConnector @Inject()(appConfig: AppConfig,
 
   import appConfig.{
     agentClientAuthorisationBaseUrl,
-    agentMappibngBaseUrl,
+    agentMappingBaseUrl,
     agentFiRelationshipBaseUrl
   }
 
@@ -32,7 +32,7 @@ class AgentConnector @Inject()(appConfig: AppConfig,
     s"$agentFiRelationshipBaseUrl/agent-fi-relationship/agent/${arn.value}/terminate"
 
   def aMTerminateUrl(arn: Arn): String =
-    s"$agentMappibngBaseUrl/agent-mapping/agent/${arn.value}/terminate"
+    s"$agentMappingBaseUrl/agent-mapping/agent/${arn.value}/terminate"
 
   def removeAgentInvitations(arn: Arn)(
       implicit hc: HeaderCarrier,
@@ -41,7 +41,7 @@ class AgentConnector @Inject()(appConfig: AppConfig,
       r.status match {
         case 200 => true
         case status =>
-          Logger(getClass).warn(s"Termination for ACA returned: $status")
+          Logger(getClass).warn(s"Termination for Agent-Client-Authorisation returned: $status")
           false
       }
     }
@@ -53,7 +53,7 @@ class AgentConnector @Inject()(appConfig: AppConfig,
       r.status match {
         case 200 => true
         case status =>
-          Logger(getClass).warn(s"Termination for ACA returned: $status")
+          Logger(getClass).warn(s"Termination for Agent-Fi-Relationship returned: $status")
           false
       }
     }
@@ -65,7 +65,7 @@ class AgentConnector @Inject()(appConfig: AppConfig,
       r.status match {
         case 200 => true
         case status =>
-          Logger(getClass).warn(s"Termination for ACA returned: $status")
+          Logger(getClass).warn(s"Termination for Agent-Mapping returned: $status")
           false
       }
     }
