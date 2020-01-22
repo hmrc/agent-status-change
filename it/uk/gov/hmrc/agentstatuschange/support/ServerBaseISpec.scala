@@ -17,8 +17,15 @@ abstract class ServerBaseISpec extends BaseISpec with GuiceOneServerPerSuite wit
       "auditing.consumer.baseUri.port" -> wireMockPort,
       "microservice.services.des.host" -> wireMockHost,
       "microservice.services.des.port" -> wireMockPort,
+      "microservice.services.agent-client-authorisation.host" -> wireMockHost,
+      "microservice.services.agent-client-authorisation.port" -> wireMockPort,
+      "microservice.services.agent-fi-relationship.host" -> wireMockHost,
+      "microservice.services.agent-fi-relationship.port" -> wireMockPort,
+      "microservice.services.agent-mapping.host" -> wireMockHost,
+      "microservice.services.agent-mapping.port" -> wireMockPort,
       "mongodb.uri" -> s"mongodb://127.0.0.1:27017/test-${this.getClass.getSimpleName}",
-      "test.stubbed.status" -> "Active"
+      "test.stubbed.status" -> "Active",
+      "termination.stride.enrolment" -> "caat"
     ).build()
 
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(timeout = Span(4, Seconds), interval = Span(1, Seconds))

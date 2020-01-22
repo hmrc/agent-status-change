@@ -8,12 +8,14 @@ import play.api.mvc._
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 import uk.gov.hmrc.agentstatuschange.connectors.{
+  AgentConnector,
   DesConnector,
   Invalid,
   Unsubscribed
 }
 import uk.gov.hmrc.agentstatuschange.models._
 import uk.gov.hmrc.agentstatuschange.services.AgentStatusChangeMongoService
+import uk.gov.hmrc.agentstatuschange.wiring.AppConfig
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.TaxIdentifier
 import uk.gov.hmrc.http.HeaderCarrier
@@ -24,15 +26,18 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class AgentStatusChangeController @Inject()(
     override val authConnector: AuthConnector,
+    agentConnector: AgentConnector,
     desConnector: DesConnector,
     agentStatusChangeMongoService: AgentStatusChangeMongoService,
     cc: ControllerComponents,
+    appConfig: AppConfig,
     config: Configuration)(implicit ec: ExecutionContext)
     extends BackendController(cc)
     with AuthActions {
 
   import agentStatusChangeMongoService._
   import desConnector._
+  import appConfig.terminationStrideRole
 
   val configStubStatus = config.getOptional[String]("test.stubbed.status")
   val stubStatus = configStubStatus.getOrElse("Active")
@@ -108,5 +113,33 @@ class AgentStatusChangeController @Inject()(
         }
       }
     }
+
+  def removeAgentRecords(arn: Arn): Action[AnyContent] = Action.async {
+    implicit request =>
+      onlyStride(terminationStrideRole) {
+        if (Arn.isValid(arn.value)) {
+          val invitationsResponse =
+            agentConnector.removeAgentInvitations(arn)
+          val afiRelationshipsResponse =
+            agentConnector.removeAFIRelationship(arn)
+          val mappingResponse =
+            agentConnector.removeAgentMapping(arn)
+
+          (for {
+            _ <- invitationsResponse
+            _ <- afiRelationshipsResponse
+            _ <- mappingResponse
+          } yield {
+            Ok
+          }).recover {
+            case e =>
+              Logger(getClass).warn(
+                s"Agent Termination failed for ${arn.value} because: ${e.getMessage}")
+              InternalServerError
+          }
+        } else
+          Future successful BadRequest
+      }
+  }
 
 }

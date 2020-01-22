@@ -60,4 +60,31 @@ trait AuthStubs {
     verify(1, postRequestedFor(urlEqualTo("/auth/authorise")))
   }
 
+  def givenOnlyStrideStub(strideRole: String, strideUserId: String) = {
+    stubFor(
+      post(urlEqualTo("/auth/authorise"))
+        .withRequestBody(equalToJson(s"""
+                                        |{
+                                        |  "authorise": [
+                                        |    { "authProviders": ["PrivilegedApplication"] }
+                                        |  ],
+                                        |  "retrieve":["allEnrolments"]
+                                        |}""".stripMargin,
+          true, true))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""
+                         |{
+                         |"allEnrolments": [{
+                         |  "key": "$strideRole"
+                         |	}],
+                         |  "optionalCredentials": {
+                         |    "providerId": "$strideUserId",
+                         |    "providerType": "PrivilegedApplication"
+                         |  }
+                         |}""".stripMargin)
+        ))
+    this
+  }
 }
