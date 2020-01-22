@@ -39,9 +39,13 @@ class AgentConnector @Inject()(appConfig: AppConfig,
       ec: ExecutionContext): Future[Boolean] = {
     http.DELETE(acaTerminateUrl(arn)).map { r =>
       r.status match {
-        case 200 => true
+        case 200 =>
+          Logger(getClass).debug(
+            s"Agent ${arn.value} Terminated for Agent-Client-Authorisation")
+          true
         case status =>
-          Logger(getClass).warn(s"Termination for Agent-Client-Authorisation returned: $status")
+          Logger(getClass).warn(
+            s"Termination for Agent-Client-Authorisation for ${arn.value} returned: $status")
           false
       }
     }
@@ -51,9 +55,13 @@ class AgentConnector @Inject()(appConfig: AppConfig,
                                       ec: ExecutionContext): Future[Boolean] = {
     http.DELETE(afiTerminateUrl(arn)).map { r =>
       r.status match {
-        case 200 => true
+        case 200 =>
+          Logger(getClass).debug(
+            s"Agent ${arn.value} Terminated for Agent-Fi-Relationship ${arn.value}")
+          true
         case status =>
-          Logger(getClass).warn(s"Termination for Agent-Fi-Relationship returned: $status")
+          Logger(getClass).warn(
+            s"Termination for Agent-Fi-Relationship for ${arn.value} returned: $status")
           false
       }
     }
@@ -63,9 +71,13 @@ class AgentConnector @Inject()(appConfig: AppConfig,
                                    ec: ExecutionContext): Future[Boolean] = {
     http.DELETE(aMTerminateUrl(arn)).map { r =>
       r.status match {
-        case 200 => true
+        case 200 =>
+          Logger(getClass).debug(
+            s"Agent ${arn.value} Terminated for Agent-Mapping")
+          true
         case status =>
-          Logger(getClass).warn(s"Termination for Agent-Mapping returned: $status")
+          Logger(getClass).warn(
+            s"Termination for Agent-Mapping for ${arn.value} returned: $status")
           false
       }
     }

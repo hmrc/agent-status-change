@@ -164,7 +164,7 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp wit
       }
 
       "return 500 for partial error" in {
-        givenSuccessfullyRemoveInvitations(arn)
+        givenInternalServerErrorRemoveInvitations(arn)
         givenSuccessfullyRemoveAFiRelationships(arn)
         givenInternalServerErrorRemoveMapping(arn)
         givenOnlyStrideStub("caat", "1234")

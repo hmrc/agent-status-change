@@ -40,7 +40,7 @@ trait AuthActions extends AuthorisedFunctions {
 
   protected def withEnrolledFor[A](serviceName: String, identifierKey: String)(
       body: Option[String] => Future[Result])(
-      implicit request: Request[A],
+      implicit
       hc: HeaderCarrier,
       ec: ExecutionContext): Future[Result] =
     authorised(

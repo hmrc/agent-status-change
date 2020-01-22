@@ -134,10 +134,11 @@ class AgentStatusChangeController @Inject()(
           }).recover {
             case e =>
               Logger(getClass).warn(
-                s"Something has gone wrong: ${e.getMessage}")
+                s"Agent Termination failed for ${arn.value} because: ${e.getMessage}")
               InternalServerError
           }
-        } else Future successful BadRequest
+        } else
+          Future successful BadRequest
       }
   }
 
