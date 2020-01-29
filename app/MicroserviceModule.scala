@@ -13,9 +13,6 @@ class MicroserviceModule(val environment: Environment,
     Logger(getClass).info(
       s"Starting microservice agent-status-change in mode : ${environment.mode}")
 
-    bind(classOf[HttpGet]).to(classOf[DefaultHttpClient])
-    bind(classOf[HttpPost]).to(classOf[DefaultHttpClient])
-    bind(classOf[HttpDelete]).to(classOf[DefaultHttpClient])
     bind(classOf[HttpClient]).to(classOf[DefaultHttpClient])
     bind(classOf[AuthConnector]).to(classOf[DefaultAuthConnector])
   }

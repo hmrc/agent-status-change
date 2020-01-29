@@ -7,13 +7,14 @@ import play.api.Logger
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.agentstatuschange.wiring.AppConfig
-import uk.gov.hmrc.http.{HeaderCarrier, HttpDelete}
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class AgentConnector @Inject()(appConfig: AppConfig,
-                               http: HttpDelete,
+                               http: HttpClient,
                                metrics: Metrics)
     extends HttpAPIMonitor {
 
