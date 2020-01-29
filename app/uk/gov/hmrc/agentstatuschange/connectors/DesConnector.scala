@@ -13,6 +13,7 @@ import uk.gov.hmrc.agentstatuschange.wiring.AppConfig
 import uk.gov.hmrc.domain.TaxIdentifier
 import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, HttpPost, _}
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -23,7 +24,7 @@ case class Unsubscribed(detail: String) extends ErrorCase
 case class Invalid(detail: String) extends ErrorCase
 
 class DesConnector @Inject()(appConfig: AppConfig,
-                             http: HttpPost with HttpGet,
+                             http: HttpClient,
                              metrics: Metrics)
     extends HttpAPIMonitor {
 
