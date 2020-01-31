@@ -21,7 +21,8 @@ class AgentConnector @Inject()(appConfig: AppConfig,
   import appConfig.{
     agentClientAuthorisationBaseUrl,
     agentMappingBaseUrl,
-    agentFiRelationshipBaseUrl
+    agentFiRelationshipBaseUrl,
+    agentClientRelationshipsBaseUrl
   }
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
@@ -34,6 +35,9 @@ class AgentConnector @Inject()(appConfig: AppConfig,
 
   def aMTerminateUrl(arn: Arn): String =
     s"$agentMappingBaseUrl/agent-mapping/agent/${arn.value}/terminate"
+
+  def acrTerminateUrl(arn: Arn): String =
+    s"$agentClientRelationshipsBaseUrl/agent-client-relationships/agent/${arn.value}/terminate"
 
   def removeAgentInvitations(arn: Arn)(
       implicit hc: HeaderCarrier,
@@ -79,6 +83,23 @@ class AgentConnector @Inject()(appConfig: AppConfig,
         case status =>
           Logger(getClass).warn(
             s"Termination for Agent-Mapping for ${arn.value} returned: $status")
+          false
+      }
+    }
+  }
+
+  def removeAgentClientRelationships(arn: Arn)(
+      implicit hc: HeaderCarrier,
+      ec: ExecutionContext): Future[Boolean] = {
+    http.DELETE(acrTerminateUrl(arn)).map { r =>
+      r.status match {
+        case 200 =>
+          Logger(getClass).debug(
+            s"Agent ${arn.value} Terminated for Agent-Client-Relationships")
+          true
+        case status =>
+          Logger(getClass).warn(
+            s"Termination for Agent-Client-Relationships for ${arn.value} returned: $status")
           false
       }
     }

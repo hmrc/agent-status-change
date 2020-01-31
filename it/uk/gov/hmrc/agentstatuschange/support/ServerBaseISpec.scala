@@ -23,6 +23,8 @@ abstract class ServerBaseISpec extends BaseISpec with GuiceOneServerPerSuite wit
       "microservice.services.agent-fi-relationship.port" -> wireMockPort,
       "microservice.services.agent-mapping.host" -> wireMockHost,
       "microservice.services.agent-mapping.port" -> wireMockPort,
+      "microservice.services.agent-client-relationships.host" -> wireMockHost,
+      "microservice.services.agent-client-relationships.port" -> wireMockPort,
       "mongodb.uri" -> s"mongodb://127.0.0.1:27017/test-${this.getClass.getSimpleName}",
       "test.stubbed.status" -> "Active",
       "termination.stride.enrolment" -> "caat"

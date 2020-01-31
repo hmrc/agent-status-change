@@ -124,11 +124,14 @@ class AgentStatusChangeController @Inject()(
             agentConnector.removeAFIRelationship(arn)
           val mappingResponse =
             agentConnector.removeAgentMapping(arn)
+          val acrResponse =
+            agentConnector.removeAgentClientRelationships(arn)
 
           (for {
             _ <- invitationsResponse
             _ <- afiRelationshipsResponse
             _ <- mappingResponse
+            _ <- acrResponse
           } yield {
             Ok
           }).recover {

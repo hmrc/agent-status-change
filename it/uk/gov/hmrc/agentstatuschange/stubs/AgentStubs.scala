@@ -37,6 +37,12 @@ trait AgentStubs extends TestDataSupport{
         .withStatus(200)))
   }
 
+  def givenSuccessfullyRemoveAgentClientRelationships(arn: Arn) = {
+    stubFor(delete(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/terminate"))
+      .willReturn(aResponse()
+        .withStatus(200)))
+  }
+
   def givenInternalServerErrorRemoveMapping(arn: Arn) = {
     stubFor(delete(urlEqualTo(s"/agent-mapping/agent/${arn.value}/terminate"))
       .willReturn(aResponse()

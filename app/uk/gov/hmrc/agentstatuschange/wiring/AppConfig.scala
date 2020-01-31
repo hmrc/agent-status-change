@@ -29,6 +29,7 @@ trait AppConfig {
   val desAuthorizationToken: String
   val desEnvironment: String
   val agentClientAuthorisationBaseUrl: String
+  val agentClientRelationshipsBaseUrl: String
   val agentFiRelationshipBaseUrl: String
   val agentMappingBaseUrl: String
   val terminationStrideRole: String
@@ -48,6 +49,9 @@ class AppConfigImpl @Inject()(config: ServicesConfig) extends AppConfig {
     config.baseUrl("agent-fi-relationship")
   val agentMappingBaseUrl: String =
     config.baseUrl("agent-mapping")
+
+  val agentClientRelationshipsBaseUrl: String =
+    config.baseUrl("agent-client-relationships")
 
   val terminationStrideRole: String =
     config.getString("termination.stride.enrolment")

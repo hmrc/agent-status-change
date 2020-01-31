@@ -135,6 +135,7 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp wit
         givenSuccessfullyRemoveInvitations(arn)
         givenSuccessfullyRemoveAFiRelationships(arn)
         givenSuccessfullyRemoveMapping(arn)
+        givenSuccessfullyRemoveAgentClientRelationships(arn)
 
         givenOnlyStrideStub("caat", "1234")
         val result = controller.removeAgentRecords(arn)(FakeRequest("DELETE", "agent/:arn/terminate").withSession(SessionKeys.authToken -> "Bearer XYZ"))
@@ -146,6 +147,7 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp wit
         givenSuccessfullyRemoveInvitations(arn)
         givenSuccessfullyRemoveAFiRelationships(arn)
         givenSuccessfullyRemoveMapping(arn)
+        givenSuccessfullyRemoveAgentClientRelationships(arn)
 
         givenOnlyStrideStub("caat", "1234")
         val result = controller.removeAgentRecords(Arn("MARN01"))(FakeRequest("DELETE", "agent/:arn/terminate").withSession(SessionKeys.authToken -> "Bearer XYZ"))
