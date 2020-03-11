@@ -44,18 +44,31 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
                                                 None)(
       implicit hc: HeaderCarrier,
       request: Request[Any],
-      ec: ExecutionContext): Future[Unit] =
+      ec: ExecutionContext): Future[Unit] = {
+    val details = failureReason match {
+      case Some(fr) =>
+        Seq(
+          "agentReferenceNumber" -> arn.value,
+          "status" -> status,
+          "credId" -> credId,
+          "authProvider" -> "PrivilegedApplication",
+          "failureReason" -> fr
+        )
+      case None =>
+        Seq(
+          "agentReferenceNumber" -> arn.value,
+          "status" -> status,
+          "credId" -> credId,
+          "authProvider" -> "PrivilegedApplication"
+        )
+    }
+
     auditEvent(
       AgentStatusChangeEvent.TerminateMtdAgentStatusChangeRecord,
       "terminate-mtd-agent-status-change-record",
-      Seq(
-        "agentReferenceNumber" -> arn.value,
-        "status" -> status,
-        "credId" -> credId,
-        "authProvider" -> "PrivilegedApplication",
-        "failureReason" -> failureReason.getOrElse("")
-      )
+      details
     )
+  }
 
   private[services] def auditEvent(event: AgentstatuschangeEvent,
                                    transactionName: String,
