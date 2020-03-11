@@ -1,5 +1,6 @@
 package uk.gov.hmrc.agentstatuschange.controllers
 
+import com.kenshoo.play.metrics.Metrics
 import javax.inject.{Inject, Singleton}
 import org.joda.time.DateTime
 import play.api.libs.json.JsValue
@@ -14,12 +15,14 @@ import uk.gov.hmrc.agentstatuschange.connectors.{
   Unsubscribed
 }
 import uk.gov.hmrc.agentstatuschange.models._
-import uk.gov.hmrc.agentstatuschange.services.AgentStatusChangeMongoService
+import uk.gov.hmrc.agentstatuschange.services.{
+  AgentStatusChangeMongoService,
+  AuditService
+}
 import uk.gov.hmrc.agentstatuschange.wiring.AppConfig
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.TaxIdentifier
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.controller.BackendController
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -31,13 +34,14 @@ class AgentStatusChangeController @Inject()(
     agentStatusChangeMongoService: AgentStatusChangeMongoService,
     cc: ControllerComponents,
     appConfig: AppConfig,
+    metrics: Metrics,
+    auditService: AuditService,
     config: Configuration)(implicit ec: ExecutionContext)
-    extends BackendController(cc)
-    with AuthActions {
+    extends AuthActions(metrics, authConnector, cc) {
 
   import agentStatusChangeMongoService._
-  import desConnector._
   import appConfig.terminationStrideRole
+  import desConnector._
 
   val configStubStatus = config.getOptional[String]("test.stubbed.status")
   val stubStatus = configStubStatus.getOrElse("Active")
@@ -114,35 +118,41 @@ class AgentStatusChangeController @Inject()(
       }
     }
 
-  def removeAgentRecords(arn: Arn): Action[AnyContent] = Action.async {
-    implicit request =>
-      onlyStride(terminationStrideRole) {
-        if (Arn.isValid(arn.value)) {
-          val invitationsResponse =
-            agentConnector.removeAgentInvitations(arn)
-          val afiRelationshipsResponse =
-            agentConnector.removeAFIRelationship(arn)
-          val mappingResponse =
-            agentConnector.removeAgentMapping(arn)
-          val acrResponse =
-            agentConnector.removeAgentClientRelationships(arn)
+  def removeAgentRecords(arn: Arn): Action[AnyContent] =
+    onlyStride(terminationStrideRole) { implicit request => creds =>
+      if (Arn.isValid(arn.value)) {
+        val invitationsResponse =
+          agentConnector.removeAgentInvitations(arn)
+        val afiRelationshipsResponse =
+          agentConnector.removeAFIRelationship(arn)
+        val mappingResponse =
+          agentConnector.removeAgentMapping(arn)
+        val acrResponse =
+          agentConnector.removeAgentClientRelationships(arn)
 
-          (for {
-            _ <- invitationsResponse
-            _ <- afiRelationshipsResponse
-            _ <- mappingResponse
-            _ <- acrResponse
-          } yield {
-            Ok
-          }).recover {
-            case e =>
-              Logger(getClass).warn(
-                s"Agent Termination failed for ${arn.value} because: ${e.getMessage}")
-              InternalServerError
-          }
-        } else
-          Future successful BadRequest
-      }
-  }
+        (for {
+          _ <- invitationsResponse
+          _ <- afiRelationshipsResponse
+          _ <- mappingResponse
+          _ <- acrResponse
+        } yield {
+          auditService.sendTerminateMtdAgentStatusChangeRecord(arn,
+                                                               "Success",
+                                                               creds.providerId)
+          Ok
+        }).recover {
+          case e =>
+            auditService.sendTerminateMtdAgentStatusChangeRecord(
+              arn,
+              "Failed",
+              creds.providerId,
+              Some(e.getMessage))
+            Logger(getClass).warn(
+              s"Agent Termination failed for ${arn.value} because: ${e.getMessage}")
+            InternalServerError
+        }
+      } else
+        Future successful BadRequest
+    }
 
 }

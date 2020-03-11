@@ -13,27 +13,47 @@ import uk.gov.hmrc.play.audit.model.DataEvent
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
-object AgentstatuschangeEvent extends Enumeration {
-  val GetAgentDetails = Value
+object AgentStatusChangeEvent extends Enumeration {
+  val GetAgentDetails, TerminateMtdAgentStatusChangeRecord = Value
   type AgentstatuschangeEvent = Value
 }
 
 @Singleton
 class AuditService @Inject()(val auditConnector: AuditConnector) {
 
-  import AgentstatuschangeEvent._
+  import AgentStatusChangeEvent._
 
   def sendGetAgentDetails(model: AgentDetails, agentReference: Arn)(
       implicit hc: HeaderCarrier,
       request: Request[Any],
       ec: ExecutionContext): Unit =
     auditEvent(
-      AgentstatuschangeEvent.GetAgentDetails,
+      AgentStatusChangeEvent.GetAgentDetails,
       "get-agent-details",
       Seq(
         "arn" -> agentReference.value,
         "agentStatus" -> model.agentStatus,
         "agencyName" -> model.agencyName
+      )
+    )
+
+  def sendTerminateMtdAgentStatusChangeRecord(arn: Arn,
+                                              status: String,
+                                              credId: String,
+                                              failureReason: Option[String] =
+                                                None)(
+      implicit hc: HeaderCarrier,
+      request: Request[Any],
+      ec: ExecutionContext): Future[Unit] =
+    auditEvent(
+      AgentStatusChangeEvent.TerminateMtdAgentStatusChangeRecord,
+      "terminate-mtd-agent-status-change-record",
+      Seq(
+        "agentReferenceNumber" -> arn.value,
+        "status" -> status,
+        "credId" -> credId,
+        "authProvider" -> "PrivilegedApplication",
+        "failureReason" -> failureReason.getOrElse("")
       )
     )
 
@@ -49,8 +69,7 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
                                     transactionName: String,
                                     details: (String, Any)*)(
       implicit hc: HeaderCarrier,
-      request: Request[Any],
-      ec: ExecutionContext): DataEvent = {
+      request: Request[Any]): DataEvent = {
 
     val detail =
       hc.toAuditDetails(details.map(pair => pair._1 -> pair._2.toString): _*)

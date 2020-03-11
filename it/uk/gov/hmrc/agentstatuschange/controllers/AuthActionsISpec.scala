@@ -1,19 +1,21 @@
 package uk.gov.hmrc.agentstatuschange.controllers
 
-import play.api.mvc.Result
-import play.api.mvc.Results._
+import com.kenshoo.play.metrics.Metrics
+import play.api.mvc.{ControllerComponents, Result}
 import play.api.test.FakeRequest
+import uk.gov.hmrc.agentstatuschange.support.AppBaseISpec
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisationException, InsufficientEnrolments}
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
-import uk.gov.hmrc.agentstatuschange.support.AppBaseISpec
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class AuthActionsISpec extends AppBaseISpec {
 
-  object TestController extends AuthActions {
+  val metrics: Metrics = app.injector.instanceOf[Metrics]
+  val authConnector: AuthConnector = app.injector.instanceOf[AuthConnector]
+  val cc: ControllerComponents = app.injector.instanceOf[ControllerComponents]
 
-    override def authConnector: AuthConnector = app.injector.instanceOf[AuthConnector]
+  object TestController extends AuthActions(metrics, authConnector, cc) {
 
     implicit val hc = HeaderCarrier()
     implicit val request = FakeRequest().withSession(SessionKeys.authToken -> "Bearer XYZ")
@@ -28,7 +30,9 @@ class AuthActionsISpec extends AppBaseISpec {
     }
 
     def withOnlyStride(strideRole: String) = {
-      await(super.onlyStride(strideRole) { Future.successful(Ok) })
+      await(super.onlyStride(strideRole) { _ =>
+        _ =>
+          Future.successful(Ok) })
     }
 
   }
@@ -136,7 +140,7 @@ class AuthActionsISpec extends AppBaseISpec {
       givenOnlyStrideStub("caat", "123ABC")
       implicit val request = FakeRequest("GET", "/path-of-request").withSession(SessionKeys.authToken -> "Bearer XYZ")
 
-      val result: Future[Result] = TestController.withOnlyStride("caat")
+      val result: Future[Result] = TestController.withOnlyStride("caat")(request)
       status(result) shouldBe 200
     }
 
@@ -144,14 +148,14 @@ class AuthActionsISpec extends AppBaseISpec {
       givenOnlyStrideStub("maintain-agent-relationships", "123ABC")
       implicit val request = FakeRequest("GET", "/path-of-request").withSession(SessionKeys.authToken -> "Bearer XYZ")
 
-      val result: Future[Result] = TestController.withOnlyStride("caat")
+      val result: Future[Result] = TestController.withOnlyStride("caat")(request)
       status(result) shouldBe 401
     }
 
     "return 403 if non-stride login" in {
       implicit val request = FakeRequest("GET", "/path-of-request").withSession(SessionKeys.authToken -> "Bearer XYZ")
 
-      val result: Future[Result] = TestController.withOnlyStride("caat")
+      val result: Future[Result] = TestController.withOnlyStride("caat")(request)
       status(result) shouldBe 403
     }
   }

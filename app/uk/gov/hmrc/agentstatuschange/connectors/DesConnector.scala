@@ -12,7 +12,7 @@ import uk.gov.hmrc.agentstatuschange.models.ArnAndAgencyName
 import uk.gov.hmrc.agentstatuschange.wiring.AppConfig
 import uk.gov.hmrc.domain.TaxIdentifier
 import uk.gov.hmrc.http.logging.Authorization
-import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, HttpPost, _}
+import uk.gov.hmrc.http.{HeaderCarrier, _}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, Future}

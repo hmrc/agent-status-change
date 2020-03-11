@@ -90,15 +90,13 @@ abstract class MonitoringFilter(kenshooRegistry: MetricRegistry)(
   }
 
   private def monitor(serviceName: String)(function: => Future[Result])(
-      implicit hc: HeaderCarrier,
-      ec: ExecutionContext): Future[Result] =
+      implicit ec: ExecutionContext): Future[Result] =
     timer(serviceName) {
       function
     }
 
   private def timer(serviceName: String)(function: => Future[Result])(
-      implicit hc: HeaderCarrier,
-      ec: ExecutionContext): Future[Result] = {
+      implicit ec: ExecutionContext): Future[Result] = {
     val start = System.nanoTime()
     function.andThen {
       case Success(result) =>

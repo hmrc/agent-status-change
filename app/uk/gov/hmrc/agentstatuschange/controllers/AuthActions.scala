@@ -1,25 +1,35 @@
 package uk.gov.hmrc.agentstatuschange.controllers
 
+import com.kenshoo.play.metrics.Metrics
+import javax.inject.{Inject, Singleton}
 import play.api.Logger
-import play.api.mvc.{Request, Result}
+import play.api.mvc._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
 import uk.gov.hmrc.auth.core.AuthProvider.{
   GovernmentGateway,
   PrivilegedApplication
 }
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.authorisedEnrolments
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.allEnrolments
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{
+  allEnrolments,
+  authorisedEnrolments,
+  credentials
+}
+import uk.gov.hmrc.auth.core.retrieve.{Credentials, ~}
 import uk.gov.hmrc.http.HeaderCarrier
-import play.api.mvc.Results.{Forbidden, Unauthorized}
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait AuthActions extends AuthorisedFunctions {
+@Singleton
+class AuthActions @Inject()(metrics: Metrics,
+                            val authConnector: AuthConnector,
+                            cc: ControllerComponents)
+    extends BackendController(cc)
+    with AuthorisedFunctions {
 
   protected def withAuthorisedAsAgent[A](body: Arn => Future[Result])(
-      implicit request: Request[A],
-      hc: HeaderCarrier,
+      implicit hc: HeaderCarrier,
       ec: ExecutionContext): Future[Result] =
     withEnrolledFor("HMRC-AS-AGENT", "AgentReferenceNumber") {
       case Some(arn) => body(Arn(arn))
@@ -29,8 +39,7 @@ trait AuthActions extends AuthorisedFunctions {
     }
 
   protected def withAuthorisedAsClient[A](body: MtdItId => Future[Result])(
-      implicit request: Request[A],
-      hc: HeaderCarrier,
+      implicit hc: HeaderCarrier,
       ec: ExecutionContext): Future[Result] =
     withEnrolledFor("HMRC-MTD-IT", "MTDITID") {
       case Some(mtdItID) => body(MtdItId(mtdItID))
@@ -55,25 +64,30 @@ trait AuthActions extends AuthorisedFunctions {
         body(id)
       }
 
-  def onlyStride(strideRole: String)(action: => Future[Result])(
-      implicit hc: HeaderCarrier,
-      ec: ExecutionContext): Future[Result] =
-    authorised(AuthProviders(PrivilegedApplication))
-      .retrieve(allEnrolments) {
-        case allEnrols
-            if allEnrols.enrolments.map(_.key).contains(strideRole) =>
-          action
-        case e =>
-          Logger(getClass).warn(
-            s"Unauthorized Discovered during Stride Authentication: ${e.enrolments
-              .map(enrol => enrol.key)
-              .mkString(",")}")
-          Future successful Unauthorized
-      }
-      .recover {
-        case e =>
-          Logger(getClass).warn(
-            s"Error Discovered during Stride Authentication: ${e.getMessage}")
-          Forbidden
-      }
+  protected type RequestWithCreds =
+    Request[AnyContent] => Credentials => Future[Result]
+
+  def onlyStride(strideRole: String)(body: RequestWithCreds)(
+      implicit ec: ExecutionContext): Action[AnyContent] =
+    Action.async { implicit request =>
+      authorised(AuthProviders(PrivilegedApplication))
+        .retrieve(allEnrolments and credentials) {
+          case allEnrols ~ Some(creds)
+              if allEnrols.enrolments.map(_.key).contains(strideRole) =>
+            body(request)(creds)
+          case e ~ _ =>
+            Logger(getClass).warn(
+              s"Unauthorized Discovered during Stride Authentication: ${e.enrolments
+                .map(enrol => enrol.key)
+                .mkString(",")}")
+            Future successful Unauthorized
+        }
+        .recover {
+          case e =>
+            Logger(getClass).warn(
+              s"Error Discovered during Stride Authentication: ${e.getMessage}")
+            Forbidden
+        }
+    }
+
 }
