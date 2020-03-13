@@ -7,7 +7,6 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration._
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
-import play.api.libs.json.Json
 import uk.gov.hmrc.play.it.Port
 
 trait UpstreamServicesStubs extends BeforeAndAfterAll
