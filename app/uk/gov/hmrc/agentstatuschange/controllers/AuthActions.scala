@@ -1,25 +1,28 @@
 package uk.gov.hmrc.agentstatuschange.controllers
 
 import play.api.Logger
-import play.api.mvc.{Request, Result}
+import play.api.mvc.Result
+import play.api.mvc.Results.{Forbidden, Unauthorized}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
 import uk.gov.hmrc.auth.core.AuthProvider.{
   GovernmentGateway,
   PrivilegedApplication
 }
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.authorisedEnrolments
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.allEnrolments
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{
+  allEnrolments,
+  authorisedEnrolments,
+  credentials
+}
+import uk.gov.hmrc.auth.core.retrieve.{Credentials, ~}
 import uk.gov.hmrc.http.HeaderCarrier
-import play.api.mvc.Results.{Forbidden, Unauthorized}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 trait AuthActions extends AuthorisedFunctions {
 
   protected def withAuthorisedAsAgent[A](body: Arn => Future[Result])(
-      implicit request: Request[A],
-      hc: HeaderCarrier,
+      implicit hc: HeaderCarrier,
       ec: ExecutionContext): Future[Result] =
     withEnrolledFor("HMRC-AS-AGENT", "AgentReferenceNumber") {
       case Some(arn) => body(Arn(arn))
@@ -29,8 +32,7 @@ trait AuthActions extends AuthorisedFunctions {
     }
 
   protected def withAuthorisedAsClient[A](body: MtdItId => Future[Result])(
-      implicit request: Request[A],
-      hc: HeaderCarrier,
+      implicit hc: HeaderCarrier,
       ec: ExecutionContext): Future[Result] =
     withEnrolledFor("HMRC-MTD-IT", "MTDITID") {
       case Some(mtdItID) => body(MtdItId(mtdItID))
@@ -55,15 +57,15 @@ trait AuthActions extends AuthorisedFunctions {
         body(id)
       }
 
-  def onlyStride(strideRole: String)(action: => Future[Result])(
+  def onlyStride(strideRole: String)(action: => Credentials => Future[Result])(
       implicit hc: HeaderCarrier,
       ec: ExecutionContext): Future[Result] =
     authorised(AuthProviders(PrivilegedApplication))
-      .retrieve(allEnrolments) {
-        case allEnrols
+      .retrieve(allEnrolments and credentials) {
+        case allEnrols ~ Some(creds)
             if allEnrols.enrolments.map(_.key).contains(strideRole) =>
-          action
-        case e =>
+          action(creds)
+        case e ~ _ =>
           Logger(getClass).warn(
             s"Unauthorized Discovered during Stride Authentication: ${e.enrolments
               .map(enrol => enrol.key)

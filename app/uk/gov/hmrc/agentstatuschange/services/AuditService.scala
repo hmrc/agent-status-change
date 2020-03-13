@@ -14,7 +14,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 object AgentstatuschangeEvent extends Enumeration {
-  val GetAgentDetails = Value
+  val GetAgentDetails, TerminateMtdAgentStatusChangeRecord = Value
   type AgentstatuschangeEvent = Value
 }
 
@@ -37,6 +37,40 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
       )
     )
 
+  def sendTerminateMtdAgentStatusChangeRecord(arn: Arn,
+                                              status: String,
+                                              credId: String,
+                                              failureReason: Option[String] =
+                                                None)(
+      implicit hc: HeaderCarrier,
+      request: Request[Any],
+      ec: ExecutionContext): Future[Unit] = {
+
+    val details = failureReason match {
+      case Some(fr) =>
+        Seq(
+          "agentReferenceNumber" -> arn.value,
+          "status" -> status,
+          "credId" -> credId,
+          "authProvider" -> "PrivilegedApplication",
+          "failureReason" -> fr
+        )
+      case None =>
+        Seq(
+          "agentReferenceNumber" -> arn.value,
+          "status" -> status,
+          "credId" -> credId,
+          "authProvider" -> "PrivilegedApplication"
+        )
+    }
+
+    auditEvent(
+      AgentstatuschangeEvent.TerminateMtdAgentStatusChangeRecord,
+      "terminate-mtd-agent-status-change-record",
+      details
+    )
+  }
+
   private[services] def auditEvent(event: AgentstatuschangeEvent,
                                    transactionName: String,
                                    details: Seq[(String, Any)] = Seq.empty)(
@@ -49,8 +83,7 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
                                     transactionName: String,
                                     details: (String, Any)*)(
       implicit hc: HeaderCarrier,
-      request: Request[Any],
-      ec: ExecutionContext): DataEvent = {
+      request: Request[Any]): DataEvent = {
 
     val detail =
       hc.toAuditDetails(details.map(pair => pair._1 -> pair._2.toString): _*)
