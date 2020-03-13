@@ -9,9 +9,10 @@ import uk.gov.hmrc.auth.core.AuthProvider.{
 }
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.authorisedEnrolments
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.allEnrolments
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{allEnrolments, credentials}
 import uk.gov.hmrc.http.HeaderCarrier
 import play.api.mvc.Results.{Forbidden, Unauthorized}
+import uk.gov.hmrc.auth.core.retrieve.{Credentials, ~}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -55,15 +56,15 @@ trait AuthActions extends AuthorisedFunctions {
         body(id)
       }
 
-  def onlyStride(strideRole: String)(action: => Future[Result])(
+  def onlyStride(strideRole: String)(action: => Credentials => Future[Result])(
       implicit hc: HeaderCarrier,
       ec: ExecutionContext): Future[Result] =
     authorised(AuthProviders(PrivilegedApplication))
-      .retrieve(allEnrolments) {
-        case allEnrols
+      .retrieve(allEnrolments and credentials) {
+        case allEnrols ~ Some(creds)
             if allEnrols.enrolments.map(_.key).contains(strideRole) =>
-          action
-        case e =>
+          action(creds)
+        case e ~ _ =>
           Logger(getClass).warn(
             s"Unauthorized Discovered during Stride Authentication: ${e.enrolments
               .map(enrol => enrol.key)

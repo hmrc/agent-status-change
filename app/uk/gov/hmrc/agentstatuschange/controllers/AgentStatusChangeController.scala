@@ -14,7 +14,10 @@ import uk.gov.hmrc.agentstatuschange.connectors.{
   Unsubscribed
 }
 import uk.gov.hmrc.agentstatuschange.models._
-import uk.gov.hmrc.agentstatuschange.services.AgentStatusChangeMongoService
+import uk.gov.hmrc.agentstatuschange.services.{
+  AgentStatusChangeMongoService,
+  AuditService
+}
 import uk.gov.hmrc.agentstatuschange.wiring.AppConfig
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.TaxIdentifier
@@ -26,6 +29,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class AgentStatusChangeController @Inject()(
     override val authConnector: AuthConnector,
+    auditService: AuditService,
     agentConnector: AgentConnector,
     desConnector: DesConnector,
     agentStatusChangeMongoService: AgentStatusChangeMongoService,
@@ -116,7 +120,7 @@ class AgentStatusChangeController @Inject()(
 
   def removeAgentRecords(arn: Arn): Action[AnyContent] = Action.async {
     implicit request =>
-      onlyStride(terminationStrideRole) {
+      onlyStride(terminationStrideRole) { creds =>
         if (Arn.isValid(arn.value)) {
           val invitationsResponse =
             agentConnector.removeAgentInvitations(arn)
@@ -133,9 +137,18 @@ class AgentStatusChangeController @Inject()(
             _ <- mappingResponse
             _ <- acrResponse
           } yield {
+            auditService.sendTerminateMtdAgentStatusChangeRecord(
+              arn,
+              "Success",
+              creds.providerId)
             Ok
           }).recover {
             case e =>
+              auditService.sendTerminateMtdAgentStatusChangeRecord(
+                arn,
+                "Failed",
+                creds.providerId,
+                Some(e.getMessage))
               Logger(getClass).warn(
                 s"Agent Termination failed for ${arn.value} because: ${e.getMessage}")
               InternalServerError

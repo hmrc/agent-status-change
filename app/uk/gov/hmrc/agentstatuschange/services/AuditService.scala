@@ -14,7 +14,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 object AgentstatuschangeEvent extends Enumeration {
-  val GetAgentDetails = Value
+  val GetAgentDetails, TerminateMtdAgentStatusChangeRecord = Value
   type AgentstatuschangeEvent = Value
 }
 
@@ -36,6 +36,40 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
         "agencyName" -> model.agencyName
       )
     )
+
+  def sendTerminateMtdAgentStatusChangeRecord(arn: Arn,
+                                              status: String,
+                                              credId: String,
+                                              failureReason: Option[String] =
+                                                None)(
+      implicit hc: HeaderCarrier,
+      request: Request[Any],
+      ec: ExecutionContext): Future[Unit] = {
+
+    val details = failureReason match {
+      case Some(fr) =>
+        Seq(
+          "agentReferenceNumber" -> arn.value,
+          "status" -> status,
+          "credId" -> credId,
+          "authProvider" -> "PrivilegedApplication",
+          "failureReason" -> fr
+        )
+      case None =>
+        Seq(
+          "agentReferenceNumber" -> arn.value,
+          "status" -> status,
+          "credId" -> credId,
+          "authProvider" -> "PrivilegedApplication"
+        )
+    }
+
+    auditEvent(
+      AgentstatuschangeEvent.TerminateMtdAgentStatusChangeRecord,
+      "terminate-mtd-agent-status-change-record",
+      details
+    )
+  }
 
   private[services] def auditEvent(event: AgentstatuschangeEvent,
                                    transactionName: String,

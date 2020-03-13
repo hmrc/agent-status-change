@@ -28,7 +28,7 @@ class AuthActionsISpec extends AppBaseISpec {
     }
 
     def withOnlyStride(strideRole: String) = {
-      await(super.onlyStride(strideRole) { Future.successful(Ok) })
+      await(super.onlyStride(strideRole) { _ => Future.successful(Ok) })
     }
 
   }
