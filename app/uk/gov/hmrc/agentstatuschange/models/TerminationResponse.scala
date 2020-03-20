@@ -13,3 +13,9 @@ case class TerminationResponse(counts: Seq[DeletionCount])
 object TerminationResponse {
   implicit val formats = Json.format[TerminationResponse]
 }
+
+case class TerminationErrorResponse(service: String, reason: String)
+
+object TerminationErrorResponse {
+  implicit val formats = Json.format[TerminationErrorResponse]
+}
