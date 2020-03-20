@@ -4,7 +4,7 @@ import com.google.inject.Singleton
 import javax.inject.Inject
 import play.api.mvc.Request
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.agentstatuschange.models.{AgentDetails, DeletionCounts}
+import uk.gov.hmrc.agentstatuschange.models.{AgentDetails, DeletionCount}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.AuditExtensions._
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -38,7 +38,7 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
     )
 
   def sendTerminateMtdAgent(arn: Arn,
-                            counts: Seq[DeletionCounts],
+                            counts: Seq[DeletionCount],
                             credId: String,
                             failureReason: Option[Seq[String]] = None)(
       implicit hc: HeaderCarrier,

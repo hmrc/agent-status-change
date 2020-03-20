@@ -137,7 +137,7 @@ class AgentStatusChangeController @Inject()(
 
           for {
             responses: Seq[Either[String, TerminationResponse]] <- terminationResponses
-            counts: Seq[DeletionCounts] = responses
+            counts: Seq[DeletionCount] = responses
               .filter(_.isRight)
               .map(_.right.get.counts)
               .flatten

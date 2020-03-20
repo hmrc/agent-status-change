@@ -1,10 +1,7 @@
 package models
 
 import play.api.libs.json.Json
-import uk.gov.hmrc.agentstatuschange.models.{
-  DeletionCounts,
-  TerminationResponse
-}
+import uk.gov.hmrc.agentstatuschange.models.{DeletionCount, TerminationResponse}
 import uk.gov.hmrc.play.test.UnitSpec
 
 class TerminationResponseSpec extends UnitSpec {
@@ -24,7 +21,7 @@ class TerminationResponseSpec extends UnitSpec {
             |}""".stripMargin)
         .as[TerminationResponse] shouldBe TerminationResponse(
         Seq(
-          DeletionCounts("example-service", "example-store", 123)
+          DeletionCount("example-service", "example-store", 123)
         ))
     }
   }
