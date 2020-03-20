@@ -4,7 +4,11 @@ import com.google.inject.Singleton
 import javax.inject.Inject
 import play.api.mvc.Request
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.agentstatuschange.models.{AgentDetails, DeletionCount}
+import uk.gov.hmrc.agentstatuschange.models.{
+  AgentDetails,
+  DeletionCount,
+  TerminationErrorResponse
+}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.AuditExtensions._
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -39,28 +43,28 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
 
   def sendTerminateMtdAgent(arn: Arn,
                             counts: Seq[DeletionCount],
-                            credId: String,
-                            failureReason: Option[Seq[String]] = None)(
-      implicit hc: HeaderCarrier,
-      request: Request[Any],
-      ec: ExecutionContext): Future[Unit] = {
+                            pid: String,
+                            failures: Option[Seq[TerminationErrorResponse]] =
+                              None)(implicit hc: HeaderCarrier,
+                                    request: Request[Any],
+                                    ec: ExecutionContext): Future[Unit] = {
 
-    val details = failureReason match {
-      case Some(fr) =>
+    val details = failures match {
+      case Some(fs) =>
         Seq(
           "agentReferenceNumber" -> arn.value,
           "status" -> "Failed",
           "counts" -> counts,
-          "credId" -> credId,
+          "pid" -> pid,
           "authProvider" -> "PrivilegedApplication",
-          "failureReason" -> fr
+          "failures" -> fs
         )
       case None =>
         Seq(
           "agentReferenceNumber" -> arn.value,
           "status" -> "Success",
           "counts" -> counts,
-          "credId" -> credId,
+          "pid" -> pid,
           "authProvider" -> "PrivilegedApplication"
         )
     }

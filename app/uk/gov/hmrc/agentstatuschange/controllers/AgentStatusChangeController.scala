@@ -2,7 +2,7 @@ package uk.gov.hmrc.agentstatuschange.controllers
 
 import javax.inject.{Inject, Singleton}
 import org.joda.time.DateTime
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsValue, Json}
 import play.api.libs.json.Json.toJson
 import play.api.mvc._
 import play.api.{Configuration, Logger}
@@ -123,36 +123,37 @@ class AgentStatusChangeController @Inject()(
       onlyStride(terminationStrideRole) { creds =>
         if (Arn.isValid(arn.value)) {
 
-          val terminationCalls
-            : Seq[Future[Either[String, TerminationResponse]]] = Seq(
-            agentConnector.removeAgentInvitations(arn),
-            agentConnector.removeAFIRelationship(arn),
-            agentConnector.removeAgentMapping(arn),
-            agentConnector.removeAgentClientRelationships(arn)
-          )
+          val terminationCalls: Seq[
+            Future[Either[TerminationErrorResponse, TerminationResponse]]] =
+            Seq(
+              agentConnector.removeAgentInvitations(arn),
+              agentConnector.removeAFIRelationship(arn),
+              agentConnector.removeAgentMapping(arn),
+              agentConnector.removeAgentClientRelationships(arn)
+            )
 
-          val terminationResponses
-            : Future[Seq[Either[String, TerminationResponse]]] =
+          val terminationResponses: Future[
+            Seq[Either[TerminationErrorResponse, TerminationResponse]]] =
             Future.sequence(terminationCalls)
 
           for {
-            responses: Seq[Either[String, TerminationResponse]] <- terminationResponses
-            counts: Seq[DeletionCount] = responses
+            responses <- terminationResponses
+            counts = responses
               .filter(_.isRight)
               .map(_.right.get.counts)
               .flatten
-            errors: Seq[String] = responses.filter(_.isLeft).map(_.left.get)
-            maybeErrors: Option[Seq[String]] = if (errors.isEmpty) None
-            else Some(errors)
+            errors = responses.filter(_.isLeft).map(_.left.get)
+            maybeErrors = if (errors.isEmpty) None else Some(errors)
           } yield {
             auditService.sendTerminateMtdAgent(arn,
                                                counts,
                                                creds.providerId,
                                                maybeErrors)
-            if (errors.isEmpty)
+            if (errors.isEmpty) {
               Ok
-            else
+            } else {
               InternalServerError
+            }
           }
         } else
           Future successful BadRequest

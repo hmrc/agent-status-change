@@ -7,7 +7,10 @@ import play.api.Logger
 import play.api.libs.json.Json
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.agentstatuschange.models.TerminationResponse
+import uk.gov.hmrc.agentstatuschange.models.{
+  TerminationErrorResponse,
+  TerminationResponse
+}
 import uk.gov.hmrc.agentstatuschange.wiring.AppConfig
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
@@ -41,9 +44,9 @@ class AgentConnector @Inject()(appConfig: AppConfig,
   def acrTerminateUrl(arn: Arn): String =
     s"$agentClientRelationshipsBaseUrl/agent-client-relationships/agent/${arn.value}/terminate"
 
-  def removeAgentInvitations(arn: Arn)(
-      implicit hc: HeaderCarrier,
-      ec: ExecutionContext): Future[Either[String, TerminationResponse]] = {
+  def removeAgentInvitations(arn: Arn)(implicit hc: HeaderCarrier,
+                                       ec: ExecutionContext)
+    : Future[Either[TerminationErrorResponse, TerminationResponse]] = {
     http
       .DELETE(acaTerminateUrl(arn))
       .map { r =>
@@ -59,13 +62,14 @@ class AgentConnector @Inject()(appConfig: AppConfig,
           Logger(getClass).warn(
             s"Termination for agent-client-authorisation for ${arn.value} returned: ${e.getMessage}")
           Left(
-            s"Termination for agent-client-authorisation for ${arn.value} returned: ${e.getMessage}")
+            TerminationErrorResponse("agent-client-authorisation",
+                                     e.getMessage))
       }
   }
 
-  def removeAFIRelationship(arn: Arn)(
-      implicit hc: HeaderCarrier,
-      ec: ExecutionContext): Future[Either[String, TerminationResponse]] = {
+  def removeAFIRelationship(arn: Arn)(implicit hc: HeaderCarrier,
+                                      ec: ExecutionContext)
+    : Future[Either[TerminationErrorResponse, TerminationResponse]] = {
     http
       .DELETE(afiTerminateUrl(arn))
       .map { r =>
@@ -80,14 +84,13 @@ class AgentConnector @Inject()(appConfig: AppConfig,
         case e =>
           Logger(getClass).warn(
             s"Termination for agent-fi-relationship for ${arn.value} returned: ${e.getMessage}")
-          Left(
-            s"Termination for agent-fi-relationship for ${arn.value} returned: ${e.getMessage}")
+          Left(TerminationErrorResponse("agent-fi-relationship", e.getMessage))
       }
   }
 
-  def removeAgentMapping(arn: Arn)(
-      implicit hc: HeaderCarrier,
-      ec: ExecutionContext): Future[Either[String, TerminationResponse]] = {
+  def removeAgentMapping(arn: Arn)(implicit hc: HeaderCarrier,
+                                   ec: ExecutionContext)
+    : Future[Either[TerminationErrorResponse, TerminationResponse]] = {
     http
       .DELETE(aMTerminateUrl(arn))
       .map { r =>
@@ -102,14 +105,13 @@ class AgentConnector @Inject()(appConfig: AppConfig,
         case e =>
           Logger(getClass).warn(
             s"Termination for agent-mapping for ${arn.value} returned: ${e.getMessage}")
-          Left(
-            s"Termination for agent-mapping for ${arn.value} returned: ${e.getMessage}")
+          Left(TerminationErrorResponse("agent-mapping", e.getMessage))
       }
   }
 
-  def removeAgentClientRelationships(arn: Arn)(
-      implicit hc: HeaderCarrier,
-      ec: ExecutionContext): Future[Either[String, TerminationResponse]] = {
+  def removeAgentClientRelationships(arn: Arn)(implicit hc: HeaderCarrier,
+                                               ec: ExecutionContext)
+    : Future[Either[TerminationErrorResponse, TerminationResponse]] = {
     http
       .DELETE(acrTerminateUrl(arn))
       .map { r =>
@@ -125,7 +127,8 @@ class AgentConnector @Inject()(appConfig: AppConfig,
           Logger(getClass).warn(
             s"Termination for agent-client-relationships for ${arn.value} returned: ${e.getMessage}")
           Left(
-            s"Termination for agent-client-relationships for ${arn.value} returned: ${e.getMessage}")
+            TerminationErrorResponse("agent-client-relationships",
+                                     e.getMessage))
       }
   }
 }
