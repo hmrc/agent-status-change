@@ -122,35 +122,36 @@ class AgentStatusChangeController @Inject()(
     implicit request =>
       onlyStride(terminationStrideRole) { creds =>
         if (Arn.isValid(arn.value)) {
-          val invitationsResponse =
-            agentConnector.removeAgentInvitations(arn)
-          val afiRelationshipsResponse =
-            agentConnector.removeAFIRelationship(arn)
-          val mappingResponse =
-            agentConnector.removeAgentMapping(arn)
-          val acrResponse =
-            agentConnector.removeAgentClientRelationships(arn)
 
-          (for {
-            _ <- invitationsResponse
-            _ <- afiRelationshipsResponse
-            _ <- mappingResponse
-            _ <- acrResponse
+          val terminationCalls
+            : Seq[Future[Either[String, TerminationResponse]]] = Seq(
+            agentConnector.removeAgentInvitations(arn),
+            agentConnector.removeAFIRelationship(arn),
+            agentConnector.removeAgentMapping(arn),
+            agentConnector.removeAgentClientRelationships(arn)
+          )
+
+          val terminationResponses
+            : Future[Seq[Either[String, TerminationResponse]]] =
+            Future.sequence(terminationCalls)
+
+          for {
+            responses: Seq[Either[String, TerminationResponse]] <- terminationResponses
+            counts: Seq[DeletionCounts] = responses
+              .filter(_.isRight)
+              .map(_.right.get.counts)
+              .flatten
+            errors: Seq[String] = responses.filter(_.isLeft).map(_.left.get)
+            maybeErrors: Option[Seq[String]] = if (errors.isEmpty) None
+            else Some(errors)
           } yield {
-            auditService.sendTerminateMtdAgentStatusChangeRecord(
-              arn,
-              "Success",
-              creds.providerId)
-            Ok
-          }).recover {
-            case e =>
-              auditService.sendTerminateMtdAgentStatusChangeRecord(
-                arn,
-                "Failed",
-                creds.providerId,
-                Some(e.getMessage))
-              Logger(getClass).warn(
-                s"Agent Termination failed for ${arn.value} because: ${e.getMessage}")
+            auditService.sendTerminateMtdAgent(arn,
+                                               counts,
+                                               creds.providerId,
+                                               maybeErrors)
+            if (errors.isEmpty)
+              Ok
+            else
               InternalServerError
           }
         } else

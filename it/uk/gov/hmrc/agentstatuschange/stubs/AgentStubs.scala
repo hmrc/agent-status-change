@@ -10,7 +10,21 @@ trait AgentStubs extends TestDataSupport{
   def givenSuccessfullyRemoveInvitations(arn: Arn) = {
     stubFor(delete(urlEqualTo(s"/agent-client-authorisation/agent/${arn.value}/terminate"))
       .willReturn(aResponse()
-        .withStatus(200)))
+        .withStatus(200)
+        .withBody(
+          """{ "counts": [
+            |  {
+            |    "service": "agent-client-authorisation",
+            |    "store": "agent-reference",
+            |    "count": 1
+            |  },
+            |  {
+            |    "service": "agent-client-authorisation",
+            |    "store": "invitations",
+            |    "count": 15
+            |  }]
+            |}
+            |""".stripMargin)))
   }
 
   def givenInternalServerErrorRemoveInvitations(arn: Arn) = {
@@ -22,7 +36,16 @@ trait AgentStubs extends TestDataSupport{
   def givenSuccessfullyRemoveAFiRelationships(arn: Arn) = {
     stubFor(delete(urlEqualTo(s"/agent-fi-relationship/agent/${arn.value}/terminate"))
       .willReturn(aResponse()
-        .withStatus(200)))
+        .withStatus(200)
+        .withBody(
+          """{ "counts": [
+            |  {
+            |    "service": "agent-fi-relationship",
+            |    "store": "fi-relationship",
+            |    "count": 9
+            |  }]
+            |}
+            |""".stripMargin)))
   }
 
   def givenInternalServerErrorIRemoveAFiRelationships(arn: Arn) = {
@@ -34,13 +57,36 @@ trait AgentStubs extends TestDataSupport{
   def givenSuccessfullyRemoveMapping(arn: Arn) = {
     stubFor(delete(urlEqualTo(s"/agent-mapping/agent/${arn.value}/terminate"))
       .willReturn(aResponse()
-        .withStatus(200)))
+        .withStatus(200)
+        .withBody(
+          """{ "counts": [
+            |  {
+            |    "service": "agent-mapping",
+            |    "store": "all-regimes",
+            |    "count": 25
+            |  }]
+            |}
+            |""".stripMargin)))
   }
 
   def givenSuccessfullyRemoveAgentClientRelationships(arn: Arn) = {
     stubFor(delete(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/terminate"))
       .willReturn(aResponse()
-        .withStatus(200)))
+        .withStatus(200)
+        .withBody(
+          """{ "counts": [
+            |  {
+            |    "service": "agent-client-relationships",
+            |    "store": "delete-record",
+            |    "count": 15
+            |  },
+            |  {
+            |    "service": "agent-client-relationships",
+            |    "store": "relationship-copy-record",
+            |    "count": 12
+            |  }]
+            |}
+            |""".stripMargin)))
   }
 
   def givenInternalServerErrorRemoveMapping(arn: Arn) = {
