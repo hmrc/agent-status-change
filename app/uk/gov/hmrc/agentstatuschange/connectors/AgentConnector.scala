@@ -4,8 +4,10 @@ import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
 import javax.inject.{Inject, Singleton}
 import play.api.Logger
+import play.api.libs.json.Json
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentstatuschange.models.TerminationResponse
 import uk.gov.hmrc.agentstatuschange.wiring.AppConfig
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
@@ -20,9 +22,9 @@ class AgentConnector @Inject()(appConfig: AppConfig,
 
   import appConfig.{
     agentClientAuthorisationBaseUrl,
-    agentMappingBaseUrl,
+    agentClientRelationshipsBaseUrl,
     agentFiRelationshipBaseUrl,
-    agentClientRelationshipsBaseUrl
+    agentMappingBaseUrl
   }
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
@@ -41,67 +43,89 @@ class AgentConnector @Inject()(appConfig: AppConfig,
 
   def removeAgentInvitations(arn: Arn)(
       implicit hc: HeaderCarrier,
-      ec: ExecutionContext): Future[Boolean] = {
-    http.DELETE(acaTerminateUrl(arn)).map { r =>
-      r.status match {
-        case 200 =>
-          Logger(getClass).debug(
-            s"Agent ${arn.value} Terminated for Agent-Client-Authorisation")
-          true
-        case status =>
-          Logger(getClass).warn(
-            s"Termination for Agent-Client-Authorisation for ${arn.value} returned: $status")
-          false
+      ec: ExecutionContext): Future[Either[String, TerminationResponse]] = {
+    http
+      .DELETE(acaTerminateUrl(arn))
+      .map { r =>
+        r.status match {
+          case 200 =>
+            Logger(getClass).debug(
+              s"Agent ${arn.value} Terminated for Agent-Client-Authorisation")
+            Right(Json.parse(r.body).as[TerminationResponse])
+        }
       }
-    }
+      .recover {
+        case e =>
+          Logger(getClass).warn(
+            s"Termination for agent-client-authorisation for ${arn.value} returned: ${e.getMessage}")
+          Left(
+            s"Termination for agent-client-authorisation for ${arn.value} returned: ${e.getMessage}")
+      }
   }
 
-  def removeAFIRelationship(arn: Arn)(implicit hc: HeaderCarrier,
-                                      ec: ExecutionContext): Future[Boolean] = {
-    http.DELETE(afiTerminateUrl(arn)).map { r =>
-      r.status match {
-        case 200 =>
-          Logger(getClass).debug(
-            s"Agent ${arn.value} Terminated for Agent-Fi-Relationship ${arn.value}")
-          true
-        case status =>
-          Logger(getClass).warn(
-            s"Termination for Agent-Fi-Relationship for ${arn.value} returned: $status")
-          false
+  def removeAFIRelationship(arn: Arn)(
+      implicit hc: HeaderCarrier,
+      ec: ExecutionContext): Future[Either[String, TerminationResponse]] = {
+    http
+      .DELETE(afiTerminateUrl(arn))
+      .map { r =>
+        r.status match {
+          case 200 =>
+            Logger(getClass).debug(
+              s"Agent ${arn.value} Terminated for Agent-Fi-Relationship ${arn.value}")
+            Right(Json.parse(r.body).as[TerminationResponse])
+        }
       }
-    }
+      .recover {
+        case e =>
+          Logger(getClass).warn(
+            s"Termination for agent-fi-relationship for ${arn.value} returned: ${e.getMessage}")
+          Left(
+            s"Termination for agent-fi-relationship for ${arn.value} returned: ${e.getMessage}")
+      }
   }
 
-  def removeAgentMapping(arn: Arn)(implicit hc: HeaderCarrier,
-                                   ec: ExecutionContext): Future[Boolean] = {
-    http.DELETE(aMTerminateUrl(arn)).map { r =>
-      r.status match {
-        case 200 =>
-          Logger(getClass).debug(
-            s"Agent ${arn.value} Terminated for Agent-Mapping")
-          true
-        case status =>
-          Logger(getClass).warn(
-            s"Termination for Agent-Mapping for ${arn.value} returned: $status")
-          false
+  def removeAgentMapping(arn: Arn)(
+      implicit hc: HeaderCarrier,
+      ec: ExecutionContext): Future[Either[String, TerminationResponse]] = {
+    http
+      .DELETE(aMTerminateUrl(arn))
+      .map { r =>
+        r.status match {
+          case 200 =>
+            Logger(getClass).debug(
+              s"Agent ${arn.value} Terminated for Agent-Mapping")
+            Right(Json.parse(r.body).as[TerminationResponse])
+        }
       }
-    }
+      .recover {
+        case e =>
+          Logger(getClass).warn(
+            s"Termination for agent-mapping for ${arn.value} returned: ${e.getMessage}")
+          Left(
+            s"Termination for agent-mapping for ${arn.value} returned: ${e.getMessage}")
+      }
   }
 
   def removeAgentClientRelationships(arn: Arn)(
       implicit hc: HeaderCarrier,
-      ec: ExecutionContext): Future[Boolean] = {
-    http.DELETE(acrTerminateUrl(arn)).map { r =>
-      r.status match {
-        case 200 =>
-          Logger(getClass).debug(
-            s"Agent ${arn.value} Terminated for Agent-Client-Relationships")
-          true
-        case status =>
-          Logger(getClass).warn(
-            s"Termination for Agent-Client-Relationships for ${arn.value} returned: $status")
-          false
+      ec: ExecutionContext): Future[Either[String, TerminationResponse]] = {
+    http
+      .DELETE(acrTerminateUrl(arn))
+      .map { r =>
+        r.status match {
+          case 200 =>
+            Logger(getClass).debug(
+              s"Agent ${arn.value} Terminated for Agent-Client-Relationships")
+            Right(Json.parse(r.body).as[TerminationResponse])
+        }
       }
-    }
+      .recover {
+        case e =>
+          Logger(getClass).warn(
+            s"Termination for agent-client-relationships for ${arn.value} returned: ${e.getMessage}")
+          Left(
+            s"Termination for agent-client-relationships for ${arn.value} returned: ${e.getMessage}")
+      }
   }
 }

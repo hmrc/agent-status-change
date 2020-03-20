@@ -4,7 +4,7 @@ import com.google.inject.Singleton
 import javax.inject.Inject
 import play.api.mvc.Request
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.agentstatuschange.models.AgentDetails
+import uk.gov.hmrc.agentstatuschange.models.{AgentDetails, DeletionCount}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.AuditExtensions._
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -14,7 +14,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 object AgentstatuschangeEvent extends Enumeration {
-  val GetAgentDetails, TerminateMtdAgentStatusChangeRecord = Value
+  val GetAgentDetails, TerminateMtdAgent = Value
   type AgentstatuschangeEvent = Value
 }
 
@@ -37,11 +37,10 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
       )
     )
 
-  def sendTerminateMtdAgentStatusChangeRecord(arn: Arn,
-                                              status: String,
-                                              credId: String,
-                                              failureReason: Option[String] =
-                                                None)(
+  def sendTerminateMtdAgent(arn: Arn,
+                            counts: Seq[DeletionCount],
+                            credId: String,
+                            failureReason: Option[Seq[String]] = None)(
       implicit hc: HeaderCarrier,
       request: Request[Any],
       ec: ExecutionContext): Future[Unit] = {
@@ -50,7 +49,8 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
       case Some(fr) =>
         Seq(
           "agentReferenceNumber" -> arn.value,
-          "status" -> status,
+          "status" -> "Failed",
+          "counts" -> counts,
           "credId" -> credId,
           "authProvider" -> "PrivilegedApplication",
           "failureReason" -> fr
@@ -58,15 +58,16 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
       case None =>
         Seq(
           "agentReferenceNumber" -> arn.value,
-          "status" -> status,
+          "status" -> "Success",
+          "counts" -> counts,
           "credId" -> credId,
           "authProvider" -> "PrivilegedApplication"
         )
     }
 
     auditEvent(
-      AgentstatuschangeEvent.TerminateMtdAgentStatusChangeRecord,
-      "terminate-mtd-agent-status-change-record",
+      AgentstatuschangeEvent.TerminateMtdAgent,
+      "terminate-mtd-agent",
       details
     )
   }
