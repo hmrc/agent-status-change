@@ -2,6 +2,7 @@ package uk.gov.hmrc.agentstatuschange.services
 
 import com.google.inject.Singleton
 import javax.inject.Inject
+import play.api.libs.json.Json
 import play.api.mvc.Request
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.agentstatuschange.models.{
@@ -54,16 +55,16 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
         Seq(
           "agentReferenceNumber" -> arn.value,
           "status" -> "Failed",
-          "counts" -> counts,
+          "counts" -> Json.prettyPrint(Json.toJson(counts)),
           "pid" -> pid,
           "authProvider" -> "PrivilegedApplication",
-          "failures" -> fs
+          "failures" -> Json.prettyPrint(Json.toJson(fs))
         )
       case None =>
         Seq(
           "agentReferenceNumber" -> arn.value,
           "status" -> "Success",
-          "counts" -> counts,
+          "counts" -> Json.prettyPrint(Json.toJson(counts)),
           "pid" -> pid,
           "authProvider" -> "PrivilegedApplication"
         )
