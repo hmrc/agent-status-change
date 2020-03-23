@@ -2,7 +2,7 @@ package uk.gov.hmrc.agentstatuschange.controllers
 
 import javax.inject.{Inject, Singleton}
 import org.joda.time.DateTime
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.JsValue
 import play.api.libs.json.Json.toJson
 import play.api.mvc._
 import play.api.{Configuration, Logger}
@@ -40,8 +40,8 @@ class AgentStatusChangeController @Inject()(
     with AuthActions {
 
   import agentStatusChangeMongoService._
-  import desConnector._
   import appConfig.terminationStrideRole
+  import desConnector._
 
   val configStubStatus = config.getOptional[String]("test.stubbed.status")
   val stubStatus = configStubStatus.getOrElse("Active")
