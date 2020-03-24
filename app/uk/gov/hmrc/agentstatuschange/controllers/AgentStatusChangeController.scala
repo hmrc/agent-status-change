@@ -119,10 +119,7 @@ class AgentStatusChangeController @Inject()(
 
   def removeAgentRecords(arn: Arn): Action[AnyContent] = Action.async {
     implicit request =>
-      val expectedAuth: BasicAuthentication = appConfig.expectedAuth
-      val basicAuth: Option[BasicAuthentication] = getBasicAuth(request.headers)
-
-      if (basicAuth.contains(expectedAuth)) {
+      withBasicAuth(appConfig.expectedAuth) {
         if (Arn.isValid(arn.value)) {
 
           val terminationCalls: Seq[
@@ -149,7 +146,7 @@ class AgentStatusChangeController @Inject()(
           } yield {
             auditService.sendTerminateMtdAgent(arn,
                                                counts,
-                                               expectedAuth.username,
+                                               appConfig.expectedAuth.username,
                                                maybeErrors)
             if (errors.isEmpty) {
               Ok
@@ -159,8 +156,6 @@ class AgentStatusChangeController @Inject()(
           }
         } else
           Future successful BadRequest
-      } else {
-        Future successful Unauthorized
       }
   }
 

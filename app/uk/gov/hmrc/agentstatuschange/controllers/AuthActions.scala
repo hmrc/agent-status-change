@@ -4,9 +4,8 @@ import java.nio.charset.StandardCharsets.UTF_8
 import java.util.Base64
 
 import play.api.Logger
-import play.api.http.HeaderNames._
 import play.api.mvc.Results.{Forbidden, Unauthorized}
-import play.api.mvc.{Headers, Result}
+import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
 import uk.gov.hmrc.agentstatuschange.models.BasicAuthentication
 import uk.gov.hmrc.auth.core.AuthProvider.{
@@ -18,7 +17,7 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{
   allEnrolments,
   authorisedEnrolments
 }
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex
@@ -61,23 +60,25 @@ trait AuthActions extends AuthorisedFunctions {
         body(id)
       }
 
+  val basicAuthHeader: Regex = "Basic (.+)".r
+  val decodedAuth: Regex = "(.+):(.+)".r
+
   private def decodeFromBase64(encodedString: String): String =
     try {
       new String(Base64.getDecoder.decode(encodedString), UTF_8)
     } catch { case _: Throwable => "" }
 
-  def getBasicAuth(headers: Headers): Option[BasicAuthentication] = {
-    val basicAuthHeader: Regex = "Basic (.+)".r
-    val decodedAuth: Regex = "(.+):(.+)".r
-
-    headers.get(AUTHORIZATION) match {
+  def withBasicAuth(expectedAuth: BasicAuthentication)(body: => Future[Result])(
+      implicit request: Request[_]): Future[Result] = {
+    request.headers.get(HeaderNames.authorisation) match {
       case Some(basicAuthHeader(encodedAuthHeader)) =>
         decodeFromBase64(encodedAuthHeader) match {
-          case decodedAuth(username, password) =>
-            Some(BasicAuthentication(username, password))
-          case _ => None
+          case decodedAuth(username, password)
+              if (BasicAuthentication(username, password) == expectedAuth) =>
+            body
+          case _ => Future successful Unauthorized
         }
-      case _ => None
+      case _ => Future successful Unauthorized
     }
   }
 
