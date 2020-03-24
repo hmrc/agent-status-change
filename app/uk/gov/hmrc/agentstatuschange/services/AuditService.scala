@@ -44,7 +44,7 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
 
   def sendTerminateMtdAgent(arn: Arn,
                             counts: Seq[DeletionCount],
-                            pid: String,
+                            basicAuthUsername: String,
                             failures: Option[Seq[TerminationErrorResponse]] =
                               None)(implicit hc: HeaderCarrier,
                                     request: Request[Any],
@@ -56,8 +56,7 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
           "agentReferenceNumber" -> arn.value,
           "status" -> "Failed",
           "counts" -> Json.prettyPrint(Json.toJson(counts)),
-          "pid" -> pid,
-          "authProvider" -> "PrivilegedApplication",
+          "basicAuthUsername" -> basicAuthUsername,
           "failures" -> Json.prettyPrint(Json.toJson(fs))
         )
       case None =>
@@ -65,8 +64,7 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
           "agentReferenceNumber" -> arn.value,
           "status" -> "Success",
           "counts" -> Json.prettyPrint(Json.toJson(counts)),
-          "pid" -> pid,
-          "authProvider" -> "PrivilegedApplication"
+          "basicAuthUsername" -> basicAuthUsername
         )
     }
 

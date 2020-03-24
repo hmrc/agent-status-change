@@ -11,7 +11,7 @@ import uk.gov.hmrc.agentstatuschange.models._
 import uk.gov.hmrc.agentstatuschange.services.AgentStatusChangeMongoService
 import uk.gov.hmrc.agentstatuschange.stubs.{AgentStubs, DesStubs}
 import uk.gov.hmrc.agentstatuschange.support.{DualSuite, MongoApp, ServerBaseISpec}
-import uk.gov.hmrc.http.SessionKeys
+import uk.gov.hmrc.http.HeaderNames
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -137,8 +137,7 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp wit
         givenSuccessfullyRemoveMapping(arn)
         givenSuccessfullyRemoveAgentClientRelationships(arn)
 
-        givenOnlyStrideStub("caat", "1234")
-        val result = controller.removeAgentRecords(arn)(FakeRequest("DELETE", "agent/:arn/terminate").withSession(SessionKeys.authToken -> "Bearer XYZ"))
+        val result = controller.removeAgentRecords(arn)(FakeRequest("DELETE", "agent/:arn/terminate").withHeaders(HeaderNames.authorisation -> s"Basic ${basicAuth("username:password")}"))
 
         status(result) shouldBe 200
       }
@@ -149,8 +148,7 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp wit
         givenSuccessfullyRemoveMapping(arn)
         givenSuccessfullyRemoveAgentClientRelationships(arn)
 
-        givenOnlyStrideStub("caat", "1234")
-        val result = controller.removeAgentRecords(Arn("MARN01"))(FakeRequest("DELETE", "agent/:arn/terminate").withSession(SessionKeys.authToken -> "Bearer XYZ"))
+        val result = controller.removeAgentRecords(Arn("MARN01"))(FakeRequest("DELETE", "agent/:arn/terminate").withHeaders(HeaderNames.authorisation -> s"Basic ${basicAuth("username:password")}"))
 
         status(result) shouldBe 400
       }
@@ -159,8 +157,8 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp wit
         givenInternalServerErrorRemoveInvitations(arn)
         givenInternalServerErrorIRemoveAFiRelationships(arn)
         givenInternalServerErrorRemoveMapping(arn)
-        givenOnlyStrideStub("caat", "1234")
-        val result = controller.removeAgentRecords(arn)(FakeRequest("DELETE", "agent/:arn/terminate").withSession(SessionKeys.authToken -> "Bearer XYZ"))
+
+        val result = controller.removeAgentRecords(arn)(FakeRequest("DELETE", "agent/:arn/terminate").withHeaders(HeaderNames.authorisation -> s"Basic ${basicAuth("username:password")}"))
 
         status(result) shouldBe 500
       }
@@ -169,8 +167,8 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp wit
         givenInternalServerErrorRemoveInvitations(arn)
         givenSuccessfullyRemoveAFiRelationships(arn)
         givenInternalServerErrorRemoveMapping(arn)
-        givenOnlyStrideStub("caat", "1234")
-        val result = controller.removeAgentRecords(arn)(FakeRequest("DELETE", "agent/:arn/terminate").withSession(SessionKeys.authToken -> "Bearer XYZ"))
+
+        val result = controller.removeAgentRecords(arn)(FakeRequest("DELETE", "agent/:arn/terminate").withHeaders(HeaderNames.authorisation -> s"Basic ${basicAuth("username:password")}"))
 
         status(result) shouldBe 500
       }
