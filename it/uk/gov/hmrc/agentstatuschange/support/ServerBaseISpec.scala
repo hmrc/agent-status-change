@@ -1,5 +1,8 @@
 package uk.gov.hmrc.agentstatuschange.support
 
+import java.nio.charset.StandardCharsets.UTF_8
+import java.util.Base64
+
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Seconds, Span}
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
@@ -31,4 +34,6 @@ abstract class ServerBaseISpec extends BaseISpec with GuiceOneServerPerSuite wit
     ).build()
 
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(timeout = Span(4, Seconds), interval = Span(1, Seconds))
+
+  def basicAuth(string: String): String = Base64.getEncoder.encodeToString(string.getBytes(UTF_8))
 }

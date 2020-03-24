@@ -20,6 +20,8 @@ import java.net.URL
 
 import com.google.inject.ImplementedBy
 import javax.inject.Inject
+import play.api.Logger
+import uk.gov.hmrc.agentstatuschange.models.BasicAuthentication
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @ImplementedBy(classOf[AppConfigImpl])
@@ -33,6 +35,7 @@ trait AppConfig {
   val agentFiRelationshipBaseUrl: String
   val agentMappingBaseUrl: String
   val terminationStrideRole: String
+  def expectedAuth: BasicAuthentication
 }
 
 class AppConfigImpl @Inject()(config: ServicesConfig) extends AppConfig {
@@ -55,4 +58,13 @@ class AppConfigImpl @Inject()(config: ServicesConfig) extends AppConfig {
 
   val terminationStrideRole: String =
     config.getString("termination.stride.enrolment")
+
+  def expectedAuth: BasicAuthentication = {
+    val username = config.getString("agent-termination.username")
+    val password = config.getString("agent-termination.password")
+
+    Logger.warn(s"password: $password")
+
+    BasicAuthentication(username, password)
+  }
 }

@@ -40,7 +40,6 @@ class AgentStatusChangeController @Inject()(
     with AuthActions {
 
   import agentStatusChangeMongoService._
-  import appConfig.terminationStrideRole
   import desConnector._
 
   val configStubStatus = config.getOptional[String]("test.stubbed.status")
@@ -120,7 +119,7 @@ class AgentStatusChangeController @Inject()(
 
   def removeAgentRecords(arn: Arn): Action[AnyContent] = Action.async {
     implicit request =>
-      onlyStride(terminationStrideRole) { creds =>
+      withBasicAuth(appConfig.expectedAuth) {
         if (Arn.isValid(arn.value)) {
 
           val terminationCalls: Seq[
@@ -147,7 +146,7 @@ class AgentStatusChangeController @Inject()(
           } yield {
             auditService.sendTerminateMtdAgent(arn,
                                                counts,
-                                               creds.providerId,
+                                               appConfig.expectedAuth.username,
                                                maybeErrors)
             if (errors.isEmpty) {
               Ok
