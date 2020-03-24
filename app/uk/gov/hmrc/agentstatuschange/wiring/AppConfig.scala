@@ -20,6 +20,7 @@ import java.net.URL
 
 import com.google.inject.ImplementedBy
 import javax.inject.Inject
+import play.api.Logger
 import uk.gov.hmrc.agentstatuschange.models.BasicAuthentication
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
@@ -61,6 +62,8 @@ class AppConfigImpl @Inject()(config: ServicesConfig) extends AppConfig {
   def expectedAuth: BasicAuthentication = {
     val username = config.getString("agent-termination.username")
     val password = config.getString("agent-termination.password")
+
+    Logger.warn(s"password: $password")
 
     BasicAuthentication(username, password)
   }

@@ -74,10 +74,7 @@ trait AuthActions extends AuthorisedFunctions {
       case Some(basicAuthHeader(encodedAuthHeader)) =>
         decodeFromBase64(encodedAuthHeader) match {
           case decodedAuth(username, password) =>
-            if (BasicAuthentication(username, password) == expectedAuth) {
-              Logger.warn(s"password: $password")
-              body
-            }
+            if (BasicAuthentication(username, password) == expectedAuth) body
             else {
               Logger.warn(
                 "Authorization header found in the request but invalid username or password")
