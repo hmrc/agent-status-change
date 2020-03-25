@@ -63,8 +63,6 @@ class AppConfigImpl @Inject()(config: ServicesConfig) extends AppConfig {
     val username = config.getString("agent-termination.username")
     val password = config.getString("agent-termination.password")
 
-    Logger.warn(s"password: $password")
-
     BasicAuthentication(username, password)
   }
 }
