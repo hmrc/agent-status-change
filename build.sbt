@@ -25,7 +25,7 @@ lazy val compileDeps = Seq(
   "com.github.blemale" %% "scaffeine" % "2.6.0",
   "com.typesafe.play" %% "play-json" % "2.6.13",
   "com.typesafe.play" %% "play-json-joda" % "2.6.13",
-  "uk.gov.hmrc" %% "simple-reactivemongo" % "7.22.0-play-26",
+  "uk.gov.hmrc" %% "simple-reactivemongo" % "7.30.0-play-26",
   ws
 )
 
@@ -35,7 +35,7 @@ def testDeps(scope: String) = Seq(
   "org.mockito" % "mockito-core" % "2.27.0" % scope,
   "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % scope,
   "com.github.tomakehurst" % "wiremock" % "2.23.2" % scope,
-  "uk.gov.hmrc" %% "reactivemongo-test" % "4.16.0-play-26" % scope
+  "uk.gov.hmrc" %% "reactivemongo-test" % "4.21.0-play-26" % scope
 )
 
 val jettyVersion = "9.2.24.v20180105"
