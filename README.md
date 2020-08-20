@@ -12,7 +12,7 @@
 
 ## Running the app locally
 
-    sm --start AGENTS_STUBS AGENT_STATUS_CHANGE -f
+    sm --start AGENT_AUTHORISATION -r
     sm --stop AGENT_STATUS_CHANGE
     sbt run
 

@@ -54,7 +54,5 @@ trait UpstreamServicesStubs extends BeforeAndAfterAll
         .withStatus(200)
         .withBody(s"""{"authProviderId": "$fakeCredId", "authProviderIdType":"$fakeCredIdType"}""".stripMargin)))
   }
-
-  private def similarToJson(value: String) = equalToJson(value.stripMargin, true, true)
 }
 
