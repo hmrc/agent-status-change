@@ -1,7 +1,7 @@
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 import uk.gov.hmrc.SbtAutoBuildPlugin
 
-val silencerVersion = "1.6.0"
+val silencerVersion = "1.7.0"
 
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
@@ -41,7 +41,7 @@ lazy val root = (project in file("."))
   .settings(
     name := "agent-status-change",
     organization := "uk.gov.hmrc",
-    scalaVersion := "2.12.10",
+    scalaVersion := "2.12.12",
     PlayKeys.playDefaultPort := 9424,
     resolvers := Seq(
       Resolver.bintrayRepo("hmrc", "releases"),
