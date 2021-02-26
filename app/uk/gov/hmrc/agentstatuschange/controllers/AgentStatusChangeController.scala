@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,9 @@ import javax.inject.{Inject, Singleton}
 import org.joda.time.DateTime
 import play.api.libs.json.JsValue
 import play.api.libs.json.Json.toJson
+import play.api.Logger.logger
 import play.api.mvc._
-import play.api.{Configuration, Logger}
+import play.api.Configuration
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 import uk.gov.hmrc.agentstatuschange.connectors.{
   AgentConnector,
@@ -38,7 +39,7 @@ import uk.gov.hmrc.agentstatuschange.wiring.AppConfig
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.TaxIdentifier
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -60,7 +61,7 @@ class AgentStatusChangeController @Inject()(
 
   val configStubStatus = config.getOptional[String]("test.stubbed.status")
   val stubStatus = configStubStatus.getOrElse("Active")
-  Logger.info(
+  logger.info(
     s"test.stubbed.status config value is $configStubStatus, so agent status will be $stubStatus")
   val stubbedStatus: AgentStatus = stubStatus match {
     case "Active" => Active
@@ -155,8 +156,7 @@ class AgentStatusChangeController @Inject()(
             responses <- terminationResponses
             counts = responses
               .filter(_.isRight)
-              .map(_.right.get.counts)
-              .flatten
+              .flatMap(_.right.get.counts)
             errors = responses.filter(_.isLeft).map(_.left.get)
             maybeErrors = if (errors.isEmpty) None else Some(errors)
           } yield {

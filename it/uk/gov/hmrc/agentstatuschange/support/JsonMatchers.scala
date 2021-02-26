@@ -70,14 +70,6 @@ trait JsonMatchers {
       left.foldLeft(MatchResult(true, "", ""))((a: MatchResult, v: T) => if (a.matches) matcher(v) else a)
   }
 
-  def eachArrayElement[T: Reads](matcher: Matcher[T])(implicit classTag: ClassTag[T]): Matcher[JsArray] =
-    new Matcher[JsArray] {
-      override def apply(left: JsArray): MatchResult =
-        left.value
-          .map(_.as[T])
-          .foldLeft(MatchResult(true, "", ""))((a: MatchResult, v: T) => if (a.matches) matcher(v) else a)
-    }
-
   def oneOfValues[T](values: T*): Matcher[T] = new Matcher[T] {
     override def apply(left: T): MatchResult =
       MatchResult(
