@@ -62,9 +62,11 @@ class DesConnector @Inject()(appConfig: AppConfig,
                                         new URL(appConfig.desUrl, url))
       .map(record => Right(record))
   }.recover {
-    case Upstream4xxResponse(ex) if ex.statusCode == 404 => Left(Unsubscribed("UTR_NOT_SUBSCRIBED"))
-    case Upstream4xxResponse(ex) if ex.statusCode == 400 => Left(Invalid("INVALID_UTR"))
-    case e                      => throw new Exception(s"exception: ${e.getMessage}")
+    case Upstream4xxResponse(ex) if ex.statusCode == 404 =>
+      Left(Unsubscribed("UTR_NOT_SUBSCRIBED"))
+    case Upstream4xxResponse(ex) if ex.statusCode == 400 =>
+      Left(Invalid("INVALID_UTR"))
+    case e => throw new Exception(s"exception: ${e.getMessage}")
   }
 
   private def getWithDesHeaders[A: HttpReads](apiName: String, url: URL)(
