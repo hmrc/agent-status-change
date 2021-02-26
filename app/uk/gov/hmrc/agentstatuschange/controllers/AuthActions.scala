@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentstatuschange.controllers
 import java.nio.charset.StandardCharsets.UTF_8
 import java.util.Base64
 
-import play.api.Logger
+import play.api.Logger.logger
 import play.api.mvc.Results.{Forbidden, Unauthorized}
 import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
@@ -92,17 +92,17 @@ trait AuthActions extends AuthorisedFunctions {
           case decodedAuth(username, password) =>
             if (BasicAuthentication(username, password) == expectedAuth) body
             else {
-              Logger.warn(
+              logger.warn(
                 "Authorization header found in the request but invalid username or password")
               Future successful Unauthorized
             }
           case _ =>
-            Logger.warn(
+            logger.warn(
               "Authorization header found in the request but its not in the expected format")
             Future successful Unauthorized
         }
       case _ =>
-        Logger.warn(
+        logger.warn(
           "No Authorization header found in the request for agent termination")
         Future successful Unauthorized
     }
@@ -117,7 +117,7 @@ trait AuthActions extends AuthorisedFunctions {
             if allEnrols.enrolments.map(_.key).contains(strideRole) =>
           action
         case e =>
-          Logger(getClass).warn(
+          logger.warn(
             s"Unauthorized Discovered during Stride Authentication: ${e.enrolments
               .map(enrol => enrol.key)
               .mkString(",")}")
@@ -125,7 +125,7 @@ trait AuthActions extends AuthorisedFunctions {
       }
       .recover {
         case e =>
-          Logger(getClass).warn(
+          logger.warn(
             s"Error Discovered during Stride Authentication: ${e.getMessage}")
           Forbidden
       }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package uk.gov.hmrc.agentstatuschange.connectors
 
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
+
 import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.libs.json.Json
@@ -28,8 +29,8 @@ import uk.gov.hmrc.agentstatuschange.models.{
   TerminationResponse
 }
 import uk.gov.hmrc.agentstatuschange.wiring.AppConfig
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
+import uk.gov.hmrc.http.HttpReads.Implicits._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -64,7 +65,7 @@ class AgentConnector @Inject()(appConfig: AppConfig,
                                        ec: ExecutionContext)
     : Future[Either[TerminationErrorResponse, TerminationResponse]] = {
     http
-      .DELETE(acaTerminateUrl(arn))
+      .DELETE[HttpResponse](acaTerminateUrl(arn))
       .map { r =>
         r.status match {
           case 200 =>
@@ -87,7 +88,7 @@ class AgentConnector @Inject()(appConfig: AppConfig,
                                       ec: ExecutionContext)
     : Future[Either[TerminationErrorResponse, TerminationResponse]] = {
     http
-      .DELETE(afiTerminateUrl(arn))
+      .DELETE[HttpResponse](afiTerminateUrl(arn))
       .map { r =>
         r.status match {
           case 200 =>
@@ -108,7 +109,7 @@ class AgentConnector @Inject()(appConfig: AppConfig,
                                    ec: ExecutionContext)
     : Future[Either[TerminationErrorResponse, TerminationResponse]] = {
     http
-      .DELETE(aMTerminateUrl(arn))
+      .DELETE[HttpResponse](aMTerminateUrl(arn))
       .map { r =>
         r.status match {
           case 200 =>
@@ -129,7 +130,7 @@ class AgentConnector @Inject()(appConfig: AppConfig,
                                                ec: ExecutionContext)
     : Future[Either[TerminationErrorResponse, TerminationResponse]] = {
     http
-      .DELETE(acrTerminateUrl(arn))
+      .DELETE[HttpResponse](acrTerminateUrl(arn))
       .map { r =>
         r.status match {
           case 200 =>

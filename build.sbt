@@ -1,6 +1,8 @@
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 import uk.gov.hmrc.SbtAutoBuildPlugin
 
+val silencerVersion = "1.6.0"
+
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
   Seq(
@@ -48,10 +50,18 @@ lazy val root = (project in file("."))
       Resolver.jcenterRepo
     ),
     libraryDependencies ++= compileDeps ++ testDeps("test") ++ testDeps("it"),
+    libraryDependencies ++= Seq(
+      compilerPlugin("com.github.ghik" % "silencer-plugin" % silencerVersion cross CrossVersion.full),
+      "com.github.ghik" % "silencer-lib" % silencerVersion % Provided cross CrossVersion.full
+    ),
     publishingSettings,
     scoverageSettings,
     unmanagedResourceDirectories in Compile += baseDirectory.value / "resources",
     routesImport ++= Seq("uk.gov.hmrc.agentstatuschange.binders.UrlBinders._"),
+    scalacOptions ++= Seq(
+      "-P:silencer:pathFilters=routes",
+      "-Xfatal-warnings"
+    ),
     scalafmtOnCompile in Compile := true,
     scalafmtOnCompile in Test := true
   )
@@ -65,6 +75,7 @@ lazy val root = (project in file("."))
     majorVersion := 0
   )
   .enablePlugins(PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory)
+  .disablePlugins(JUnitXmlReportPlugin)
 
 
 inConfig(IntegrationTest)(scalafmtCoreSettings)
