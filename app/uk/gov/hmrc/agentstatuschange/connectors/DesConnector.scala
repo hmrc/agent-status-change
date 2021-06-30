@@ -17,9 +17,9 @@
 package uk.gov.hmrc.agentstatuschange.connectors
 
 import java.net.URL
-
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
+
 import javax.inject.Inject
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
@@ -29,9 +29,9 @@ import uk.gov.hmrc.agentstatuschange.wiring.AppConfig
 import uk.gov.hmrc.domain.TaxIdentifier
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.UpstreamErrorResponse.Upstream4xxResponse
-import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReads}
 
+import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
 sealed trait ErrorCase
@@ -69,15 +69,21 @@ class DesConnector @Inject()(appConfig: AppConfig,
     case e => throw new Exception(s"exception: ${e.getMessage}")
   }
 
+  private val Environment = "Environment"
+  private val CorrelationId = "CorrelationId"
+  private val Authorization = "Authorization"
+
+  private def outboundHeaders =
+    Seq(
+      Environment -> "desEnvironment",
+      CorrelationId -> UUID.randomUUID().toString,
+      Authorization -> s"Bearer ${appConfig.desAuthorizationToken}"
+    )
+
   private def getWithDesHeaders[A: HttpReads](apiName: String, url: URL)(
       implicit hc: HeaderCarrier,
-      ec: ExecutionContext): Future[A] = {
-    val desHeaderCarrier = hc.copy(
-      authorization =
-        Some(Authorization(s"Bearer ${appConfig.desAuthorizationToken}")),
-      extraHeaders = hc.extraHeaders :+ "Environment" -> appConfig.desEnvironment)
+      ec: ExecutionContext): Future[A] =
     monitor(s"ConsumedAPI-DES-$apiName-GET") {
-      http.GET[A](url.toString)(implicitly[HttpReads[A]], desHeaderCarrier, ec)
+      http.GET[A](url, headers = outboundHeaders)(implicitly[HttpReads[A]], hc, ec)
     }
-  }
 }
