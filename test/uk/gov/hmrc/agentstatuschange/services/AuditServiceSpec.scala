@@ -29,7 +29,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.{Authorization, RequestId, SessionId}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.agentstatuschange.support.UnitSpec
 
 import scala.concurrent.ExecutionContext
 
@@ -52,11 +52,10 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with Eventually {
 
       val model = AgentDetails(Arn("TARN0000001"), Active, "John Smith")
 
-      await(
-        service.sendGetAgentDetails(model, Arn("ARN0001"))(
-          hc,
-          FakeRequest("GET", "/path"),
-          ExecutionContext.global))
+      service.sendGetAgentDetails(model, Arn("ARN0001"))(
+        hc,
+        FakeRequest("GET", "/path"),
+        ExecutionContext.global)
 
       eventually {
         val captor = ArgumentCaptor.forClass(classOf[DataEvent])

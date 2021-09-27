@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package binders
+package uk.gov.hmrc.agentstatuschange.binders
 
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
-import uk.gov.hmrc.agentstatuschange.binders.UrlBinders
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.agentstatuschange.support.UnitSpec
 
 class UrlBindersSpec extends UnitSpec with GuiceOneAppPerSuite {
 

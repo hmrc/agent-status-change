@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package models
+package uk.gov.hmrc.agentstatuschange.models
 
 import play.api.libs.json.Json
-import uk.gov.hmrc.agentstatuschange.models.{DeletionCount, TerminationResponse}
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.agentstatuschange.support.UnitSpec
 
 class TerminationResponseSpec extends UnitSpec {
 
