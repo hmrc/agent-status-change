@@ -84,6 +84,8 @@ class DesConnector @Inject()(appConfig: AppConfig,
       implicit hc: HeaderCarrier,
       ec: ExecutionContext): Future[A] =
     monitor(s"ConsumedAPI-DES-$apiName-GET") {
-      http.GET[A](url, headers = outboundHeaders)(implicitly[HttpReads[A]], hc, ec)
+      http.GET[A](url, headers = outboundHeaders)(implicitly[HttpReads[A]],
+                                                  hc,
+                                                  ec)
     }
 }

@@ -1,16 +1,16 @@
 package uk.gov.hmrc.agentstatuschange.services
 
 import java.time.LocalDateTime
-
 import javax.inject.Singleton
 import org.joda.time.DateTime
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.test.Helpers._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 import uk.gov.hmrc.agentstatuschange.models._
 import uk.gov.hmrc.agentstatuschange.support.{DualSuite, MongoApp, UpstreamServicesStubs}
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.agentstatuschange.support.UnitSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

@@ -20,7 +20,6 @@ import javax.inject.{Inject, Singleton}
 import org.joda.time.DateTime
 import play.api.libs.json.JsValue
 import play.api.libs.json.Json.toJson
-import play.api.Logger.logger
 import play.api.mvc._
 import play.api.Configuration
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}

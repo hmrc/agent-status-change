@@ -3,6 +3,7 @@ package uk.gov.hmrc.agentstatuschange.controllers
 import play.api.mvc.Result
 import play.api.mvc.Results._
 import play.api.test.FakeRequest
+import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisationException, InsufficientEnrolments}
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 import uk.gov.hmrc.agentstatuschange.support.AppBaseISpec
@@ -135,20 +136,20 @@ class AuthActionsISpec extends AppBaseISpec {
     "return 200 for successful stride login" in {
       givenOnlyStrideStub("caat", "123ABC")
 
-      val result: Future[Result] = TestController.withOnlyStride("caat")
+      val result = TestController.withOnlyStride("caat")
       status(result) shouldBe 200
     }
 
     "return 401 for incorrect stride login" in {
       givenOnlyStrideStub("maintain-agent-relationships", "123ABC")
 
-      val result: Future[Result] = TestController.withOnlyStride("caat")
+      val result = TestController.withOnlyStride("caat")
       status(result) shouldBe 401
     }
 
     "return 403 if non-stride login" in {
 
-      val result: Future[Result] = TestController.withOnlyStride("caat")
+      val result = TestController.withOnlyStride("caat")
       status(result) shouldBe 403
     }
   }

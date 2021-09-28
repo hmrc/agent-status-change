@@ -1,11 +1,10 @@
 package uk.gov.hmrc.agentstatuschange.controllers
 
-import akka.util.Timeout
 import org.joda.time.DateTime
 import play.api.libs.json.{JsString, Json}
 import play.api.mvc.Result
 import play.api.test.FakeRequest
-import play.api.test.Helpers.contentAsJson
+import play.api.test.Helpers._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 import uk.gov.hmrc.agentstatuschange.models._
 import uk.gov.hmrc.agentstatuschange.services.AgentStatusChangeMongoService
@@ -15,7 +14,6 @@ import uk.gov.hmrc.http.HeaderNames
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.concurrent.duration.Duration
 
 class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp with DesStubs with AgentStubs {
 
@@ -26,7 +24,6 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp wit
   def repo: AgentStatusChangeMongoService = app.injector.instanceOf[AgentStatusChangeMongoService]
 
   val utr = Utr("3110118001")
-  implicit val timeout: Timeout = Timeout(Duration.Zero)
   implicit val ord: Ordering[DateTime] =
     Ordering.by(time => time.getMillis)
 
@@ -36,7 +33,7 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp wit
         givenBusinessPartnerRecordExistsFor("arn", utr, arn, "Bing Bing")
         val result = controller.getAgentDetailsByArn(arn)(FakeRequest())
         status(result) shouldBe 200
-        contentAsJson(result) shouldBe Json.obj("arn" -> arn, "agentStatus" -> Active,
+        contentAsJson(result) shouldBe Json.obj("arn" -> arn, "agentStatus" -> (Active: AgentStatus),
           "agencyName" -> Some("Bing Bing"))
       }
 
@@ -45,7 +42,7 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp wit
         givenBusinessPartnerRecordExistsFor("arn", utr, arn, "Bong Bing")
         val result = controller.getAgentDetailsByArn(arn)(FakeRequest())
         status(result) shouldBe 200
-        contentAsJson(result) shouldBe Json.obj("arn" -> arn, "agentStatus" -> Suspended(Reason(Some("other"), Some("eaten by tyrannosaur"))),
+        contentAsJson(result) shouldBe Json.obj("arn" -> arn, "agentStatus" -> (Suspended(Reason(Some("other"), Some("eaten by tyrannosaur"))): AgentStatus),
           "agencyName" -> Some("Bong Bing"))
       }
       "respond 200 with data when a deactivated record exists" in {
@@ -53,7 +50,7 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp wit
         givenBusinessPartnerRecordExistsFor("arn", utr, arn, "Bong Bing")
         val result = controller.getAgentDetailsByArn(arn)(FakeRequest())
         status(result) shouldBe 200
-        contentAsJson(result) shouldBe Json.obj("arn" -> arn, "agentStatus" -> Deactivated(Reason(Some("other"), Some("brain in jar"))),
+        contentAsJson(result) shouldBe Json.obj("arn" -> arn, "agentStatus" -> (Deactivated(Reason(Some("other"), Some("brain in jar"))): AgentStatus),
           "agencyName" -> Some("Bong Bing"))
       }
       "respond 404 with reason when record does not exist" in {
@@ -74,7 +71,7 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp wit
         givenBusinessPartnerRecordExistsFor("utr", utr, arn, "Bong Bing")
         val result = controller.getAgentDetailsByUtr(utr)(FakeRequest())
         status(result) shouldBe 200
-        contentAsJson(result) shouldBe Json.obj("arn" -> arn, "agentStatus" -> Active,
+        contentAsJson(result) shouldBe Json.obj("arn" -> arn, "agentStatus" -> (Active: AgentStatus),
           "agencyName" -> Some("Bong Bing"))
       }
       "respond with data when a suspended record exists" in {
@@ -82,7 +79,7 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp wit
         givenBusinessPartnerRecordExistsFor("utr", utr, arn, "Bong Bing")
         val result = controller.getAgentDetailsByUtr(utr)(FakeRequest())
         status(result) shouldBe 200
-        contentAsJson(result) shouldBe Json.obj("arn" -> arn, "agentStatus" -> Suspended(Reason(Some("other"), Some("eaten by tyrannosaur"))),
+        contentAsJson(result) shouldBe Json.obj("arn" -> arn, "agentStatus" -> (Suspended(Reason(Some("other"), Some("eaten by tyrannosaur"))): AgentStatus),
           "agencyName" -> Some("Bong Bing"))
       }
       "respond with data when a deactivated record exists" in {
@@ -90,7 +87,7 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp wit
         givenBusinessPartnerRecordExistsFor("utr", utr, arn, "Bong Bing")
         val result = controller.getAgentDetailsByUtr(utr)(FakeRequest())
         status(result) shouldBe 200
-        contentAsJson(result) shouldBe Json.obj("arn" -> arn, "agentStatus" -> Deactivated(Reason(Some("other"), Some("brain in jar"))),
+        contentAsJson(result) shouldBe Json.obj("arn" -> arn, "agentStatus" -> (Deactivated(Reason(Some("other"), Some("brain in jar"))): AgentStatus),
           "agencyName" -> Some("Bong Bing"))
       }
       "respond 404 with reason when record does not exist" in {

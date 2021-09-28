@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.agentstatuschange.controllers
 
+import play.api.Logging
+
 import java.nio.charset.StandardCharsets.UTF_8
 import java.util.Base64
-
-import play.api.Logger.logger
 import play.api.mvc.Results.{Forbidden, Unauthorized}
 import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
@@ -38,7 +38,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex
 
-trait AuthActions extends AuthorisedFunctions {
+trait AuthActions extends AuthorisedFunctions with Logging {
 
   protected def withAuthorisedAsAgent[A](body: Arn => Future[Result])(
       implicit hc: HeaderCarrier,
