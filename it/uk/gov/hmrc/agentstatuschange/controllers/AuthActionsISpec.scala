@@ -5,7 +5,7 @@ import play.api.mvc.Results._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisationException, InsufficientEnrolments}
-import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
+import uk.gov.hmrc.http.{Authorization, HeaderCarrier, SessionKeys}
 import uk.gov.hmrc.agentstatuschange.support.AppBaseISpec
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -16,7 +16,7 @@ class AuthActionsISpec extends AppBaseISpec {
 
     override def authConnector: AuthConnector = app.injector.instanceOf[AuthConnector]
 
-    implicit val hc = HeaderCarrier()
+    implicit val hc = HeaderCarrier(authorization = Some(Authorization("Bearer XYZ")))
     implicit val request = FakeRequest().withSession(SessionKeys.authToken -> "Bearer XYZ")
     implicit val ec = ExecutionContext.global
 
