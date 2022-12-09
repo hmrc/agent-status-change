@@ -17,57 +17,47 @@
 package uk.gov.hmrc.agentstatuschange.services
 
 import com.google.inject.Singleton
-import javax.inject.Inject
+import com.mongodb.client.model.IndexOptions
 import org.joda.time.DateTime
-import play.api.libs.json.Json.toJsFieldJsValueWrapper
-import play.api.libs.json._
-import play.modules.reactivemongo.ReactiveMongoComponent
-import reactivemongo.api.indexes.{Index, IndexType}
-import reactivemongo.bson.BSONObjectID
-import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
+import org.mongodb.scala.model.Filters.equal
+import org.mongodb.scala.model.IndexModel
+import org.mongodb.scala.model.Indexes.ascending
 import uk.gov.hmrc.agentstatuschange.models.AgentStatusChangeRecord
-import uk.gov.hmrc.agentstatuschange.repository.StrictlyEnsureIndexes
-import uk.gov.hmrc.mongo.ReactiveRepository
-import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
+import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
-import scala.collection.Seq
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class AgentStatusChangeMongoService @Inject()(
-    mongoComponent: ReactiveMongoComponent)
-    extends ReactiveRepository[AgentStatusChangeRecord, BSONObjectID](
-      "agent-status-change",
-      mongoComponent.mongoConnector.db,
-      AgentStatusChangeRecord.format,
-      ReactiveMongoFormats.objectIdFormats)
-    with StrictlyEnsureIndexes[AgentStatusChangeRecord, BSONObjectID] {
-
-  override def indexes: Seq[Index] =
-    Seq(
-      Index(
-        Seq("arn" -> IndexType.Ascending, "lastUpdated" -> IndexType.Ascending),
-        Some("Arn_LastUpdated")
-      )
-    )
+class AgentStatusChangeMongoService @Inject()(mongoComponent: MongoComponent)(
+    implicit ec: ExecutionContext)
+    extends PlayMongoRepository[AgentStatusChangeRecord](
+      mongoComponent = mongoComponent,
+      collectionName = "agent-status-change",
+      domainFormat = AgentStatusChangeRecord.format,
+      indexes = Seq(
+        IndexModel(ascending("arn", "lastUpdated"),
+                   new IndexOptions().name("Arn_LastUpdated")))
+    ) {
 
   implicit val ord: Ordering[DateTime] =
     Ordering.by(time => time.getMillis)
 
-  def findCurrentRecordByArn(arn: String)(implicit ec: ExecutionContext)
-    : Future[Option[AgentStatusChangeRecord]] = {
+  def findCurrentRecordByArn(
+      arn: String): Future[Option[AgentStatusChangeRecord]] = {
 
-    val selector = Json.obj("arn" -> Json.toJson(arn))
+    val selector = equal("arn", arn)
     val descending = -1
-    val sort = Json.obj("lastUpdated" -> JsNumber(descending))
+    val sort = equal("lastUpdated", descending)
 
     collection
-      .find(selector, projection = None)
+      .find(selector)
       .sort(sort)
-      .one[AgentStatusChangeRecord]
+      .headOption()
   }
 
   def createRecord(agentStatusChangeRecord: AgentStatusChangeRecord)(
       implicit ec: ExecutionContext): Future[Unit] =
-    insert(agentStatusChangeRecord).map(_ => ())
+    collection.insertOne(agentStatusChangeRecord).head().map(_ => ())
 }
