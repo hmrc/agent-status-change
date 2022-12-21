@@ -16,18 +16,18 @@
 
 package uk.gov.hmrc.agentstatuschange.models
 
-import org.joda.time.DateTime
 import play.api.libs.json._
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.http.controllers.RestFormats
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
+
+import java.time.Instant
 
 case class AgentStatusChangeRecord(arn: Arn,
                                    status: AgentStatus,
-                                   lastUpdated: DateTime)
+                                   lastUpdated: Instant)
 
 object AgentStatusChangeRecord {
-  implicit val dateWrites = RestFormats.dateTimeWrite
-  implicit val dateReads = RestFormats.dateTimeRead
+  implicit val dtf: Format[Instant] = MongoJavatimeFormats.instantFormat
 
   implicit val format =
     Json.format[AgentStatusChangeRecord]

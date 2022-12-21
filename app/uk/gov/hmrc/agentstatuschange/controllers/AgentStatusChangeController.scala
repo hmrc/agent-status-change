@@ -17,7 +17,6 @@
 package uk.gov.hmrc.agentstatuschange.controllers
 
 import javax.inject.{Inject, Singleton}
-import org.joda.time.DateTime
 import play.api.libs.json.JsValue
 import play.api.libs.json.Json.toJson
 import play.api.mvc._
@@ -40,6 +39,7 @@ import uk.gov.hmrc.domain.TaxIdentifier
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -95,7 +95,7 @@ class AgentStatusChangeController @Inject()(
                   _ <- agentStatusChangeMongoService.createRecord(
                     AgentStatusChangeRecord(arnAndName.arn,
                                             stubbedStatus,
-                                            DateTime.now()))
+                                            Instant.now()))
                 } yield stubbedStatus
             }
           } yield
@@ -122,12 +122,12 @@ class AgentStatusChangeController @Inject()(
           case Some(_) =>
             for {
               _ <- agentStatusChangeMongoService.createRecord(
-                AgentStatusChangeRecord(arn, Suspended(reason), DateTime.now()))
+                AgentStatusChangeRecord(arn, Suspended(reason), Instant.now()))
             } yield Ok
           case None =>
             for {
               _ <- agentStatusChangeMongoService.createRecord(
-                AgentStatusChangeRecord(arn, Active, DateTime.now()))
+                AgentStatusChangeRecord(arn, Active, Instant.now()))
             } yield Ok
         }
       }
