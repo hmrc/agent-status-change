@@ -1,6 +1,5 @@
 package uk.gov.hmrc.agentstatuschange.controllers
 
-import org.joda.time.DateTime
 import play.api.libs.json.{JsString, Json}
 import play.api.mvc.Result
 import play.api.test.FakeRequest
@@ -12,6 +11,7 @@ import uk.gov.hmrc.agentstatuschange.stubs.{AgentStubs, DesStubs}
 import uk.gov.hmrc.agentstatuschange.support.{DualSuite, MongoApp, ServerBaseISpec}
 import uk.gov.hmrc.http.HeaderNames
 
+import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -24,8 +24,8 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp wit
   def repo: AgentStatusChangeMongoService = app.injector.instanceOf[AgentStatusChangeMongoService]
 
   val utr = Utr("3110118001")
-  implicit val ord: Ordering[DateTime] =
-    Ordering.by(time => time.getMillis)
+  implicit val ord: Ordering[Instant] =
+    Ordering.by(time => time.toEpochMilli)
 
   "AgentStatusChangeController" when {
     "GET /status/arn/:arn" should {
@@ -38,7 +38,7 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp wit
       }
 
       "respond 200 with data when a suspended record exists" in {
-        await(repo.createRecord(AgentStatusChangeRecord(arn, Suspended(Reason(Some("other"), Some("eaten by tyrannosaur"))), DateTime.parse("2019-01-01"))))
+        await(repo.createRecord(AgentStatusChangeRecord(arn, Suspended(Reason(Some("other"), Some("eaten by tyrannosaur"))), Instant.parse("2019-01-01T10:15:30.00Z"))))
         givenBusinessPartnerRecordExistsFor("arn", utr, arn, "Bong Bing")
         val result = controller.getAgentDetailsByArn(arn)(FakeRequest())
         status(result) shouldBe 200
@@ -46,7 +46,7 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp wit
           "agencyName" -> Some("Bong Bing"))
       }
       "respond 200 with data when a deactivated record exists" in {
-        await(repo.createRecord(AgentStatusChangeRecord(arn, Deactivated(Reason(Some("other"), Some("brain in jar"))), DateTime.parse("2019-01-01"))))
+        await(repo.createRecord(AgentStatusChangeRecord(arn, Deactivated(Reason(Some("other"), Some("brain in jar"))), Instant.parse("2019-01-01T10:15:30.00Z"))))
         givenBusinessPartnerRecordExistsFor("arn", utr, arn, "Bong Bing")
         val result = controller.getAgentDetailsByArn(arn)(FakeRequest())
         status(result) shouldBe 200
@@ -75,7 +75,7 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp wit
           "agencyName" -> Some("Bong Bing"))
       }
       "respond with data when a suspended record exists" in {
-        await(repo.createRecord(AgentStatusChangeRecord(arn, Suspended(Reason(Some("other"), Some("eaten by tyrannosaur"))), DateTime.parse("2019-01-01"))))
+        await(repo.createRecord(AgentStatusChangeRecord(arn, Suspended(Reason(Some("other"), Some("eaten by tyrannosaur"))), Instant.parse("2019-01-01T10:15:30.00Z"))))
         givenBusinessPartnerRecordExistsFor("utr", utr, arn, "Bong Bing")
         val result = controller.getAgentDetailsByUtr(utr)(FakeRequest())
         status(result) shouldBe 200
@@ -83,7 +83,7 @@ class AgentStatusChangeControllerISpec extends ServerBaseISpec with MongoApp wit
           "agencyName" -> Some("Bong Bing"))
       }
       "respond with data when a deactivated record exists" in {
-        await(repo.createRecord(AgentStatusChangeRecord(arn, Deactivated(Reason(Some("other"), Some("brain in jar"))), DateTime.parse("2019-01-01"))))
+        await(repo.createRecord(AgentStatusChangeRecord(arn, Deactivated(Reason(Some("other"), Some("brain in jar"))), Instant.parse("2019-01-01T10:15:30.00Z"))))
         givenBusinessPartnerRecordExistsFor("utr", utr, arn, "Bong Bing")
         val result = controller.getAgentDetailsByUtr(utr)(FakeRequest())
         status(result) shouldBe 200

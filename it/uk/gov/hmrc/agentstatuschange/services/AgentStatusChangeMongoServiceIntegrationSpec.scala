@@ -1,8 +1,7 @@
 package uk.gov.hmrc.agentstatuschange.services
 
-import java.time.LocalDateTime
+import java.time.{Instant, LocalDateTime}
 import javax.inject.Singleton
-import org.joda.time.DateTime
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -25,15 +24,15 @@ class AgentStatusChangeMongoServiceIntegrationSpec extends UnitSpec
 
   val arn: Arn = Arn("TARN0000001")
   val utr = Utr("3110118001")
-  val dateTime = DateTime.parse("2019-01-01")
+  val dateTime = Instant.parse("2019-01-01T10:15:30.00Z")
 
   val testResponseDate: String = LocalDateTime.now.toString
   val activeAgent: AgentStatusChangeRecord = AgentStatusChangeRecord(arn, Active, dateTime)
   val suspendedAgent: AgentStatusChangeRecord = AgentStatusChangeRecord(arn, Suspended(Reason(Some("other"), Some("lost in space"))), dateTime)
   val terminatedAgent: AgentStatusChangeRecord = AgentStatusChangeRecord(arn, Deactivated(Reason(Some("other"), Some("eaten by parasites"))), dateTime)
 
-  implicit val ord: Ordering[DateTime] =
-    Ordering.by(time => time.getMillis)
+  implicit val ord: Ordering[Instant] =
+    Ordering.by(time => time.toEpochMilli)
 
   protected def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()

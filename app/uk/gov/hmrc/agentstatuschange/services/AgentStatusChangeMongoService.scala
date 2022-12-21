@@ -18,7 +18,6 @@ package uk.gov.hmrc.agentstatuschange.services
 
 import com.google.inject.Singleton
 import com.mongodb.client.model.IndexOptions
-import org.joda.time.DateTime
 import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.IndexModel
 import org.mongodb.scala.model.Indexes.ascending
@@ -26,6 +25,7 @@ import uk.gov.hmrc.agentstatuschange.models.AgentStatusChangeRecord
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
+import java.time.Instant
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -41,8 +41,8 @@ class AgentStatusChangeMongoService @Inject()(mongoComponent: MongoComponent)(
                    new IndexOptions().name("Arn_LastUpdated")))
     ) {
 
-  implicit val ord: Ordering[DateTime] =
-    Ordering.by(time => time.getMillis)
+  implicit val ord: Ordering[Instant] =
+    Ordering.by(time => time.toEpochMilli)
 
   def findCurrentRecordByArn(
       arn: String): Future[Option[AgentStatusChangeRecord]] = {
