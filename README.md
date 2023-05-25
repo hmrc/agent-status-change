@@ -1,6 +1,5 @@
 # agent-status-change
 
-[ ![Download](https://api.bintray.com/packages/hmrc/releases/agent-status-change/images/download.svg) ](https://bintray.com/hmrc/releases/agent-status-change/_latestVersion)
 
 ## Running the tests
 

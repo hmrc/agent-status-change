@@ -5,4 +5,4 @@ POST        /status/arn/:arn                uk.gov.hmrc.agentstatuschange.contro
 
 # Stride Routes
 # --------------------------------
-DELETE        /agent/:arn/terminate         uk.gov.hmrc.agentstatuschange.controllers.AgentStatusChangeController.removeAgentRecords(arn: uk.gov.hmrc.agentmtdidentifiers.model.Arn)
+DELETE      /agent/:arn/terminate         uk.gov.hmrc.agentstatuschange.controllers.AgentStatusChangeController.removeAgentRecords(arn: uk.gov.hmrc.agentmtdidentifiers.model.Arn)
