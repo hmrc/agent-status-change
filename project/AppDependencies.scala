@@ -3,7 +3,7 @@ import sbt._
 
 object AppDependencies {
   private val mongoVer = "0.74.0"
-  private val bootstrapVer = "7.12.0"
+  private val bootstrapVer = "7.15.0"
   
   val compile = Seq(
     ws,
@@ -11,7 +11,7 @@ object AppDependencies {
     "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28"        % mongoVer,
     "uk.gov.hmrc"       %% "agent-mtd-identifiers"     % "1.2.0",
     "uk.gov.hmrc"       %% "agent-kenshoo-monitoring"  % "5.3.0" exclude("uk.gov.hmrc", "bootstrap-backend-play-28"),
-    "com.typesafe.play" %% "play-json"                 % "2.9.2"
+    "com.typesafe.play" %% "play-json"                 % "2.9.4"
   )
 
   val test = Seq(
