@@ -1,6 +1,10 @@
 # agent-status-change
 
-[ ![Download](https://api.bintray.com/packages/hmrc/releases/agent-status-change/images/download.svg) ](https://bintray.com/hmrc/releases/agent-status-change/_latestVersion)
+A backend microservice that:
+- Handles the suspension status of agents using the Agent Services Account
+- Handles terminating an agent (STRIDE user removing everything to do with the agent from collections in the agent services domain)
+
+Note: Service not used within Agent Services, instead we rely on the ETMP agent record.
 
 ## Running the tests
 
