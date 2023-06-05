@@ -1,6 +1,10 @@
 # agent-status-change
 
-A backend microservice responsible for handling the suspension status of agents using the Agent Services Account.
+A backend microservice that:
+- Handles the suspension status of agents using the Agent Services Account
+- Handles terminating an agent (STRIDE user removing everything to do with the agent from collections in the agent services domain)
+
+Note: Service not used within Agent Services, instead we rely on the ETMP agent record.
 
 ## Running the tests
 
