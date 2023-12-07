@@ -103,16 +103,16 @@ class AgentConnector @Inject()(appConfig: AppConfig,
             Right(Json.parse(r.body).as[TerminationResponse])
           case x =>
             Logger(getClass).warn(
-              s"Termination for agent-mapping for ${arn.value} returned: $x, ${r.body}")
+              s"Termination for agent-fi-relationship for ${arn.value} returned: $x, ${r.body}")
             Left(
-              TerminationErrorResponse("agent-mapping",
+              TerminationErrorResponse("agent-fi-relationship",
                                        s"Unexpected HTTP Response: $x"))
         }
       }
       .recover {
         case e =>
           Logger(getClass).warn(
-            s"Termination for agent-mapping for ${arn.value} returned: ${e.getMessage}")
+            s"Termination for agent-fi-relationship for ${arn.value} returned: ${e.getMessage}")
           Left(TerminationErrorResponse("agent-fi-relationship", e.getMessage))
       }
   }
