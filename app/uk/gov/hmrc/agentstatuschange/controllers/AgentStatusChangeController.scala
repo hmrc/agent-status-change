@@ -155,8 +155,8 @@ class AgentStatusChangeController @Inject()(
             responses <- terminationResponses
             counts = responses
               .filter(_.isRight)
-              .flatMap(_.right.get.counts)
-            errors = responses.filter(_.isLeft).map(_.left.get)
+              .flatMap(_.toOption.get.counts)
+            errors = responses.filter(_.isLeft).map(_.left.toOption.get)
             maybeErrors = if (errors.isEmpty) None else Some(errors)
           } yield {
             auditService.sendTerminateMtdAgent(arn,
