@@ -56,6 +56,9 @@ class DesConnector @Inject()(appConfig: AppConfig,
         s"/registration/personal-details/arn/${encodePathSegment(agentIdentifier.value)}"
       case _: Utr =>
         s"/registration/personal-details/utr/${encodePathSegment(agentIdentifier.value)}"
+      case x =>
+        throw new Exception(
+          s"Unexpected agent identifier found: '${x.value}', unable to retrieve URL")
     }
 
     getWithDesHeaders[ArnAndAgencyName]("GetArnAndAgencyName",

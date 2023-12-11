@@ -4,16 +4,16 @@ lazy val root = (project in file("."))
   .settings(
     name := "agent-status-change",
     organization := "uk.gov.hmrc",
-    scalaVersion := "2.12.15",
+    scalaVersion := "2.13.10",
     majorVersion := 1,
     PlayKeys.playDefaultPort := 9424,
     resolvers ++= Seq(Resolver.typesafeRepo("releases")),
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
+    libraryDependencySchemes ++= Seq("org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always),
     routesImport ++= Seq("uk.gov.hmrc.agentstatuschange.binders.UrlBinders._"),
     scalacOptions ++= Seq(
       "-Xfatal-warnings",
       "-Xlint:-missing-interpolator,_",
-      "-Yno-adapted-args",
       //"-Ywarn-value-discard",
       "-Ywarn-dead-code",
       "-deprecation",
