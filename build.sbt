@@ -1,15 +1,16 @@
-import uk.gov.hmrc.SbtAutoBuildPlugin
+import uk.gov.hmrc.{DefaultBuildSettings, SbtAutoBuildPlugin}
 
-lazy val root = (project in file("."))
+ThisBuild / majorVersion := 1
+ThisBuild / scalaVersion := "2.13.12"
+
+lazy val microservice = (project in file("."))
   .settings(
     name := "agent-status-change",
     organization := "uk.gov.hmrc",
-    scalaVersion := "2.13.10",
-    majorVersion := 1,
     PlayKeys.playDefaultPort := 9424,
     resolvers ++= Seq(Resolver.typesafeRepo("releases")),
-    libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
     libraryDependencySchemes ++= Seq("org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always),
+    libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
     routesImport ++= Seq("uk.gov.hmrc.agentstatuschange.binders.UrlBinders._"),
     scalacOptions ++= Seq(
       "-Xfatal-warnings",
@@ -32,15 +33,15 @@ lazy val root = (project in file("."))
     Test / parallelExecution := false,
     CodeCoverageSettings.scoverageSettings
   )
-  .configs(IntegrationTest)
-  .settings(
-    IntegrationTest / Keys.fork := false,
-    Defaults.itSettings,
-    IntegrationTest / unmanagedSourceDirectories += baseDirectory(_ / "it").value,
-    IntegrationTest / parallelExecution := false
-  )
   .enablePlugins(PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin)
   .disablePlugins(JUnitXmlReportPlugin)
 
-
-inConfig(IntegrationTest)(scalafmtCoreSettings)
+lazy val it = project
+  .enablePlugins(PlayScala)
+  .dependsOn(microservice % "test->test") // the "test->test" allows reusing test code and test dependencies
+  .settings(DefaultBuildSettings.itSettings())
+  .settings(libraryDependencies ++= AppDependencies.test)
+  .settings(
+    Compile / scalafmtOnCompile := true,
+    Test / scalafmtOnCompile := true
+  )

@@ -18,7 +18,6 @@ package uk.gov.hmrc.agentstatuschange.connectors
 
 import java.net.URL
 import com.codahale.metrics.MetricRegistry
-import com.kenshoo.play.metrics.Metrics
 
 import javax.inject.Inject
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
@@ -42,10 +41,10 @@ case class Invalid(detail: String) extends ErrorCase
 
 class DesConnector @Inject()(appConfig: AppConfig,
                              http: HttpClient,
-                             metrics: Metrics)
+                             metricRegistry: MetricRegistry)
     extends HttpAPIMonitor {
 
-  override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
+  override val kenshooRegistry: MetricRegistry = metricRegistry
 
   def getArnAndAgencyNameFor(agentIdentifier: TaxIdentifier)(
       implicit hc: HeaderCarrier,

@@ -17,7 +17,6 @@
 package uk.gov.hmrc.agentstatuschange.connectors
 
 import com.codahale.metrics.MetricRegistry
-import com.kenshoo.play.metrics.Metrics
 
 import javax.inject.{Inject, Singleton}
 import play.api.Logger
@@ -37,7 +36,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class AgentConnector @Inject()(appConfig: AppConfig,
                                http: HttpClient,
-                               metrics: Metrics)
+                               metricRegistry: MetricRegistry)
     extends HttpAPIMonitor {
 
   import appConfig.{
@@ -47,7 +46,7 @@ class AgentConnector @Inject()(appConfig: AppConfig,
     agentMappingBaseUrl
   }
 
-  override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
+  override val kenshooRegistry: MetricRegistry = metricRegistry
 
   def acaTerminateUrl(arn: Arn): String =
     s"$agentClientAuthorisationBaseUrl/agent-client-authorisation/agent/${arn.value}/terminate"

@@ -16,11 +16,10 @@
 
 package uk.gov.hmrc.agentstatuschange.binders
 
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 import uk.gov.hmrc.agentstatuschange.support.UnitSpec
 
-class UrlBindersSpec extends UnitSpec with GuiceOneAppPerSuite {
+class UrlBindersSpec extends UnitSpec {
 
   val utr = Utr("3110118001")
   val arn = Arn("TARN0000001")

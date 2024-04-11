@@ -35,7 +35,7 @@ import scala.concurrent.ExecutionContext
 
 class AuditServiceSpec extends UnitSpec with MockitoSugar with Eventually {
 
-  override implicit val patienceConfig =
+  override implicit val patienceConfig: PatienceConfig =
     PatienceConfig(timeout = scaled(Span(500, Millis)),
                    interval = scaled(Span(200, Millis)))
 

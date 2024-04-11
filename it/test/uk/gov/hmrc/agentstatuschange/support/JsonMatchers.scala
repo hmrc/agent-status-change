@@ -1,3 +1,19 @@
+/*
+ * Copyright 2024 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package uk.gov.hmrc.agentsexternalstubs.support
 import org.scalatest.matchers.{MatchResult, Matcher}
 import play.api.libs.json.{JsArray, JsObject, JsValue, Reads}
@@ -7,7 +23,7 @@ import scala.reflect.ClassTag
 trait JsonMatchers {
 
   def haveProperty[T: Reads](name: String, matcher: Matcher[T] = null)(
-    implicit classTag: ClassTag[T]): Matcher[JsObject] =
+      implicit classTag: ClassTag[T]): Matcher[JsObject] =
     new Matcher[JsObject] {
       override def apply(obj: JsObject): MatchResult =
         (obj \ name).asOpt[T] match {
@@ -15,10 +31,13 @@ trait JsonMatchers {
             if (matcher != null) matcher(value) match {
               case x =>
                 x.copy(
-                  rawNegatedFailureMessage = s"At `$name` ${x.rawNegatedFailureMessage}",
-                  rawMidSentenceNegatedFailureMessage = s"at `$name` ${x.rawMidSentenceNegatedFailureMessage}",
+                  rawNegatedFailureMessage =
+                    s"At `$name` ${x.rawNegatedFailureMessage}",
+                  rawMidSentenceNegatedFailureMessage =
+                    s"at `$name` ${x.rawMidSentenceNegatedFailureMessage}",
                   rawFailureMessage = s"at `$name` ${x.rawFailureMessage}",
-                  rawMidSentenceFailureMessage = s"at `$name` ${x.rawMidSentenceFailureMessage}"
+                  rawMidSentenceFailureMessage =
+                    s"at `$name` ${x.rawMidSentenceFailureMessage}"
                 )
             } else MatchResult(true, "", s"JSON have property `$name`")
           case _ =>
@@ -33,7 +52,7 @@ trait JsonMatchers {
     }
 
   def havePropertyArrayOf[T: Reads](name: String, matcher: Matcher[T] = null)(
-    implicit classTag: ClassTag[T]): Matcher[JsObject] =
+      implicit classTag: ClassTag[T]): Matcher[JsObject] =
     new Matcher[JsObject] {
       override def apply(obj: JsObject): MatchResult =
         (obj \ name).asOpt[JsArray] match {
@@ -41,7 +60,8 @@ trait JsonMatchers {
             if (matcher != null)
               array.value
                 .map(_.as[T])
-                .foldLeft(MatchResult(true, "", ""))((a: MatchResult, v: T) => if (a.matches) matcher(v) else a)
+                .foldLeft(MatchResult(true, "", ""))((a: MatchResult, v: T) =>
+                  if (a.matches) matcher(v) else a)
             else MatchResult(true, "", s"JSON have property `$name`")
           case _ =>
             MatchResult(
@@ -59,16 +79,21 @@ trait JsonMatchers {
       override def apply(obj: JsObject): MatchResult =
         (obj \ name).asOpt[JsValue] match {
           case Some(value) =>
-            MatchResult(false, s"JSON should not have property `$name` but we got value $value", s"")
+            MatchResult(
+              false,
+              s"JSON should not have property `$name` but we got value $value",
+              s"")
           case None =>
             MatchResult(true, "", s"JSON does not have property `$name`")
         }
     }
 
-  def eachElement[T](matcher: Matcher[T]): Matcher[Seq[T]] = new Matcher[Seq[T]] {
-    override def apply(left: Seq[T]): MatchResult =
-      left.foldLeft(MatchResult(true, "", ""))((a: MatchResult, v: T) => if (a.matches) matcher(v) else a)
-  }
+  def eachElement[T](matcher: Matcher[T]): Matcher[Seq[T]] =
+    new Matcher[Seq[T]] {
+      override def apply(left: Seq[T]): MatchResult =
+        left.foldLeft(MatchResult(true, "", ""))((a: MatchResult, v: T) =>
+          if (a.matches) matcher(v) else a)
+    }
 
   def oneOfValues[T](values: T*): Matcher[T] = new Matcher[T] {
     override def apply(left: T): MatchResult =

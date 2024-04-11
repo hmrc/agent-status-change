@@ -18,13 +18,13 @@ package uk.gov.hmrc.agentstatuschange.wiring
 
 import javax.inject.{Inject, Singleton}
 
-import com.kenshoo.play.metrics.MetricsFilter
 import play.api.http.DefaultHttpFilters
 import uk.gov.hmrc.play.bootstrap.filters.{
   AuditFilter,
   CacheControlFilter,
   LoggingFilter
 }
+import uk.gov.hmrc.play.bootstrap.metrics.MetricsFilter
 
 @Singleton
 class MicroserviceFilters @Inject()(

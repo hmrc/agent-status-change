@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentstatuschange.models
+package uk.gov.hmrc.agentstatuschange.stubs
 
-import play.api.libs.json._
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
-import java.time.Instant
+trait TestDataSupport {
 
-case class AgentStatusChangeRecord(arn: Arn,
-                                   status: AgentStatus,
-                                   lastUpdated: Instant)
-
-object AgentStatusChangeRecord {
-  implicit val dtf: Format[Instant] = MongoJavatimeFormats.instantFormat
-
-  implicit val format: OFormat[AgentStatusChangeRecord] =
-    Json.format[AgentStatusChangeRecord]
+  val arn = Arn("TARN0000001")
 }

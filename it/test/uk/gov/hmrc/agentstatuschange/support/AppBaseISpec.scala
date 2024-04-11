@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,20 @@
 
 package uk.gov.hmrc.agentstatuschange.support
 
-import org.scalatest.{BeforeAndAfterEach, Suite, TestSuite}
-import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import uk.gov.hmrc.mongo.test.MongoSupport
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.Application
+import play.api.inject.guice.GuiceApplicationBuilder
 
-trait DualSuite extends Suite with TestSuite
+abstract class AppBaseISpec extends BaseISpec with GuiceOneAppPerSuite {
 
-trait MongoApp extends BeforeAndAfterEach with MongoSupport with GuiceOneServerPerSuite {
-  me: DualSuite with MongoSupport =>
+  override implicit lazy val app: Application = new GuiceApplicationBuilder()
+    .configure(
+      "microservice.services.auth.port" -> wireMockPort,
+      "metrics.enabled" -> true,
+      "auditing.enabled" -> true,
+      "auditing.consumer.baseUri.host" -> wireMockHost,
+      "auditing.consumer.baseUri.port" -> wireMockPort
+    )
+    .build()
 
-  override def beforeEach(): Unit = {
-    super.beforeEach()
-    dropMongoDb()
-  }
-
-  def dropMongoDb(): Unit = {
-    dropDatabase()
-  }
 }
-
