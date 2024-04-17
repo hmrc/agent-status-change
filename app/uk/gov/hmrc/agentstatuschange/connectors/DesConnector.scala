@@ -17,10 +17,8 @@
 package uk.gov.hmrc.agentstatuschange.connectors
 
 import java.net.URL
-import com.codahale.metrics.MetricRegistry
 
 import javax.inject.Inject
-import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 import uk.gov.hmrc.agentstatuschange.UriPathEncoding.encodePathSegment
 import uk.gov.hmrc.agentstatuschange.models.ArnAndAgencyName
@@ -39,12 +37,7 @@ case class Unsubscribed(detail: String) extends ErrorCase
 
 case class Invalid(detail: String) extends ErrorCase
 
-class DesConnector @Inject()(appConfig: AppConfig,
-                             http: HttpClient,
-                             metricRegistry: MetricRegistry)
-    extends HttpAPIMonitor {
-
-  override val kenshooRegistry: MetricRegistry = metricRegistry
+class DesConnector @Inject()(appConfig: AppConfig, http: HttpClient) {
 
   def getArnAndAgencyNameFor(agentIdentifier: TaxIdentifier)(
       implicit hc: HeaderCarrier,
@@ -60,8 +53,7 @@ class DesConnector @Inject()(appConfig: AppConfig,
           s"Unexpected agent identifier found: '${x.value}', unable to retrieve URL")
     }
 
-    getWithDesHeaders[ArnAndAgencyName]("GetArnAndAgencyName",
-                                        new URL(appConfig.desUrl, url))
+    getWithDesHeaders[ArnAndAgencyName](new URL(appConfig.desUrl, url))
       .map(record => Right(record))
   }.recover {
     case Upstream4xxResponse(ex) if ex.statusCode == 404 =>
@@ -82,12 +74,9 @@ class DesConnector @Inject()(appConfig: AppConfig,
       Authorization -> s"Bearer ${appConfig.desAuthorizationToken}"
     )
 
-  private def getWithDesHeaders[A: HttpReads](apiName: String, url: URL)(
-      implicit hc: HeaderCarrier,
-      ec: ExecutionContext): Future[A] =
-    monitor(s"ConsumedAPI-DES-$apiName-GET") {
-      http.GET[A](url, headers = outboundHeaders)(implicitly[HttpReads[A]],
-                                                  hc,
-                                                  ec)
-    }
+  private def getWithDesHeaders[A: HttpReads](
+      url: URL)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[A] = {
+    http.GET[A](url, headers = outboundHeaders)
+  }
+
 }

@@ -9,7 +9,6 @@ lazy val microservice = (project in file("."))
     organization := "uk.gov.hmrc",
     PlayKeys.playDefaultPort := 9424,
     resolvers ++= Seq(Resolver.typesafeRepo("releases")),
-    libraryDependencySchemes ++= Seq("org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always),
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
     routesImport ++= Seq("uk.gov.hmrc.agentstatuschange.binders.UrlBinders._"),
     scalacOptions ++= Seq(
