@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2017 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,26 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentstatuschange.binders
+package uk.gov.hmrc.agentstatuschange.support
 
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
+import org.scalatest.{BeforeAndAfterEach, Suite, TestSuite}
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import uk.gov.hmrc.mongo.test.MongoSupport
 
-object UrlBinders {
-  implicit val utrBinder: SimpleObjectBinder[Utr] =
-    new SimpleObjectBinder[Utr](Utr.apply, _.value)
-  implicit val arnBinder: SimpleObjectBinder[Arn] =
-    new SimpleObjectBinder[Arn](Arn.apply, _.value)
+trait DualSuite extends Suite with TestSuite
+
+trait MongoApp
+    extends BeforeAndAfterEach
+    with MongoSupport
+    with GuiceOneServerPerSuite {
+  me: DualSuite with MongoSupport =>
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    dropMongoDb()
+  }
+
+  def dropMongoDb(): Unit = {
+    dropDatabase()
+  }
 }

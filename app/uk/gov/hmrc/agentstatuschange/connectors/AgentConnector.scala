@@ -16,13 +16,9 @@
 
 package uk.gov.hmrc.agentstatuschange.connectors
 
-import com.codahale.metrics.MetricRegistry
-import com.kenshoo.play.metrics.Metrics
-
 import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.libs.json.Json
-import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.agentstatuschange.models.{
   TerminationErrorResponse,
@@ -35,19 +31,13 @@ import uk.gov.hmrc.http.HttpReads.Implicits._
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class AgentConnector @Inject()(appConfig: AppConfig,
-                               http: HttpClient,
-                               metrics: Metrics)
-    extends HttpAPIMonitor {
-
+class AgentConnector @Inject()(appConfig: AppConfig, http: HttpClient) {
   import appConfig.{
     agentClientAuthorisationBaseUrl,
     agentClientRelationshipsBaseUrl,
     agentFiRelationshipBaseUrl,
     agentMappingBaseUrl
   }
-
-  override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
   def acaTerminateUrl(arn: Arn): String =
     s"$agentClientAuthorisationBaseUrl/agent-client-authorisation/agent/${arn.value}/terminate"

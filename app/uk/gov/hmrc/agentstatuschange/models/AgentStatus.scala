@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentstatuschange.models
 import play.api.libs.json._
 
 sealed trait AgentStatus {
-  val key = this match {
+  val key: String = this match {
     case Active         => "active"
     case _: Suspended   => "suspended"
     case _: Deactivated => "deactivated"
@@ -33,7 +33,7 @@ case class Suspended(reason: Reason) extends AgentStatus
 case class Deactivated(reason: Reason) extends AgentStatus
 
 object AgentStatus {
-  implicit val format = new Format[AgentStatus] {
+  implicit val format: Format[AgentStatus] = new Format[AgentStatus] {
     override def reads(json: JsValue): JsResult[AgentStatus] = {
       def readReason = (json \ "reason").as[Reason]
 

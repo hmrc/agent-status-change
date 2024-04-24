@@ -2,24 +2,21 @@ import play.sbt.PlayImport.ws
 import sbt._
 
 object AppDependencies {
-  private val mongoVer = "0.74.0"
-  private val bootstrapVer = "7.22.0"
+  private val mongoVersion = "1.8.0"
+  private val bootstrapVersion = "8.5.0"
   
-  val compile = Seq(
+  val compile: Seq[ModuleID] = Seq(
     ws,
-    "uk.gov.hmrc"       %% "bootstrap-backend-play-28" % bootstrapVer,
-    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28"        % mongoVer,
-    "uk.gov.hmrc"       %% "agent-mtd-identifiers"     % "1.15.0",
-    "uk.gov.hmrc"       %% "agent-kenshoo-monitoring"  % "5.5.0",
-    "com.typesafe.play" %% "play-json"                 % "2.9.2"
+    "uk.gov.hmrc"       %% "bootstrap-backend-play-30" % bootstrapVersion,
+    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-30"        % mongoVersion,
+    "uk.gov.hmrc"       %% "agent-mtd-identifiers"     % "1.15.0"
   )
 
-  val test = Seq(
-    "uk.gov.hmrc"            %% "bootstrap-test-play-28"  % bootstrapVer % "test, it",
-    "uk.gov.hmrc.mongo"      %% "hmrc-mongo-test-play-28" % mongoVer     % "test, it",
-    "org.scalatestplus.play" %% "scalatestplus-play"      % "5.1.0"      % "test, it",
-    "org.scalatestplus"      %% "mockito-3-12"            % "3.2.10.0"   % "test, it",
-    "com.github.tomakehurst" %  "wiremock-jre8"           % "2.26.1"     % "test, it",
-    "com.vladsch.flexmark"   %  "flexmark-all"            % "0.36.8"    % "test, it"
+  val test: Seq[ModuleID] = Seq(
+    "uk.gov.hmrc"            %% "bootstrap-test-play-30"  % bootstrapVersion % Test,
+    "uk.gov.hmrc.mongo"      %% "hmrc-mongo-test-play-30" % mongoVersion     % Test,
+    "org.scalatestplus.play" %% "scalatestplus-play"      % "7.0.1"          % Test,
+    "org.scalatestplus"      %% "mockito-5-10"            % "3.2.18.0"       % Test,
+    "com.vladsch.flexmark"   %  "flexmark-all"            % "0.64.8"         % Test
   )
 }

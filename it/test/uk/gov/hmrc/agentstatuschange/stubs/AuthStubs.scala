@@ -1,3 +1,19 @@
+/*
+ * Copyright 2024 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package uk.gov.hmrc.agentstatuschange.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
@@ -8,11 +24,18 @@ import uk.gov.hmrc.http.SessionKeys
 trait AuthStubs {
   me: WireMockSupport =>
 
-  case class Enrolment(serviceName: String, identifierName: String, identifierValue: String)
+  case class Enrolment(serviceName: String,
+                       identifierName: String,
+                       identifierValue: String)
 
-  def authorisedAsValidAgent[A](request: FakeRequest[A], arn: String) = authenticated(request, Enrolment("HMRC-AS-AGENT", "AgentReferenceNumber", arn), isAgent = true)
+  def authorisedAsValidAgent[A](request: FakeRequest[A], arn: String) =
+    authenticated(request,
+                  Enrolment("HMRC-AS-AGENT", "AgentReferenceNumber", arn),
+                  isAgent = true)
 
-  def authenticated[A](request: FakeRequest[A], enrolment: Enrolment, isAgent: Boolean): FakeRequest[A] = {
+  def authenticated[A](request: FakeRequest[A],
+                       enrolment: Enrolment,
+                       isAgent: Boolean): FakeRequest[A] = {
     givenAuthorisedFor(
       s"""
          |{
@@ -30,30 +53,39 @@ trait AuthStubs {
          |    {"key":"${enrolment.identifierName}", "value": "${enrolment.identifierValue}"}
          |  ]}
          |]}
-          """.stripMargin)
+          """.stripMargin
+    )
     request.withSession(SessionKeys.authToken -> "Bearer XYZ")
   }
 
   def givenUnauthorisedWith(mdtpDetail: String): Unit = {
-    stubFor(post(urlEqualTo("/auth/authorise"))
-      .willReturn(aResponse()
-        .withStatus(401)
-        .withHeader("WWW-Authenticate", s"""MDTP detail="$mdtpDetail"""")))
+    stubFor(
+      post(urlEqualTo("/auth/authorise"))
+        .willReturn(
+          aResponse()
+            .withStatus(401)
+            .withHeader("WWW-Authenticate", s"""MDTP detail="$mdtpDetail"""")))
   }
 
   def givenAuthorisedFor(payload: String, responseBody: String): Unit = {
-    stubFor(post(urlEqualTo("/auth/authorise"))
-      .atPriority(1)
-      .withRequestBody(equalToJson(payload, true, true))
-      .willReturn(aResponse()
-        .withStatus(200)
-        .withHeader("Content-Type", "application/json")
-        .withBody(responseBody)))
+    stubFor(
+      post(urlEqualTo("/auth/authorise"))
+        .atPriority(1)
+        .withRequestBody(equalToJson(payload, true, true))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withHeader("Content-Type", "application/json")
+            .withBody(responseBody)))
 
-    stubFor(post(urlEqualTo("/auth/authorise")).atPriority(2)
-      .willReturn(aResponse()
-        .withStatus(401)
-        .withHeader("WWW-Authenticate", "MDTP detail=\"InsufficientEnrolments\"")))
+    stubFor(
+      post(urlEqualTo("/auth/authorise"))
+        .atPriority(2)
+        .willReturn(
+          aResponse()
+            .withStatus(401)
+            .withHeader("WWW-Authenticate",
+                        "MDTP detail=\"InsufficientEnrolments\"")))
   }
 
   def verifyAuthoriseAttempt(): Unit = {
@@ -63,14 +95,17 @@ trait AuthStubs {
   def givenOnlyStrideStub(strideRole: String, strideUserId: String) = {
     stubFor(
       post(urlEqualTo("/auth/authorise"))
-        .withRequestBody(equalToJson(s"""
+        .withRequestBody(equalToJson(
+          s"""
                                         |{
                                         |  "authorise": [
                                         |    { "authProviders": ["PrivilegedApplication"] }
                                         |  ],
                                         |  "retrieve":["allEnrolments"]
                                         |}""".stripMargin,
-          true, true))
+          true,
+          true
+        ))
         .willReturn(
           aResponse()
             .withStatus(200)
