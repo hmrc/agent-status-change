@@ -22,7 +22,6 @@ import play.utils.UriEncoding
 
 object UriPathEncoding {
 
-  def encodePathSegment(pathSegment: String): String =
-    UriEncoding.encodePathSegment(pathSegment, UTF_8.name)
+  def encodePathSegment(pathSegment: String): String = UriEncoding.encodePathSegment(pathSegment, UTF_8.name)
 
 }

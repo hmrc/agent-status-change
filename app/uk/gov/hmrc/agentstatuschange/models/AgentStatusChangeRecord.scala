@@ -22,13 +22,16 @@ import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
 import java.time.Instant
 
-case class AgentStatusChangeRecord(arn: Arn,
-                                   status: AgentStatus,
-                                   lastUpdated: Instant)
+case class AgentStatusChangeRecord(
+  arn: Arn,
+  status: AgentStatus,
+  lastUpdated: Instant
+)
 
 object AgentStatusChangeRecord {
+
   implicit val dtf: Format[Instant] = MongoJavatimeFormats.instantFormat
 
-  implicit val format: OFormat[AgentStatusChangeRecord] =
-    Json.format[AgentStatusChangeRecord]
+  implicit val format: OFormat[AgentStatusChangeRecord] = Json.format[AgentStatusChangeRecord]
+
 }

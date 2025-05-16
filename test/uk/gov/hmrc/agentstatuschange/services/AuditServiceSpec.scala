@@ -20,24 +20,32 @@ import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import org.scalatest.concurrent.Eventually
-import org.scalatest.time.{Millis, Span}
+import org.scalatest.time.Millis
+import org.scalatest.time.Span
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.agentstatuschange.models.{Active, AgentDetails}
+import uk.gov.hmrc.agentstatuschange.models.Active
+import uk.gov.hmrc.agentstatuschange.models.AgentDetails
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.{Authorization, RequestId, SessionId}
+import uk.gov.hmrc.http.Authorization
+import uk.gov.hmrc.http.RequestId
+import uk.gov.hmrc.http.SessionId
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.agentstatuschange.support.UnitSpec
 
 import scala.concurrent.ExecutionContext
 
-class AuditServiceSpec extends UnitSpec with MockitoSugar with Eventually {
+class AuditServiceSpec
+extends UnitSpec
+with MockitoSugar
+with Eventually {
 
-  override implicit val patienceConfig: PatienceConfig =
-    PatienceConfig(timeout = scaled(Span(500, Millis)),
-                   interval = scaled(Span(200, Millis)))
+  override implicit val patienceConfig: PatienceConfig = PatienceConfig(
+    timeout = scaled(Span(500, Millis)),
+    interval = scaled(Span(200, Millis))
+  )
 
   "auditService" should {
 
@@ -45,22 +53,30 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with Eventually {
       val mockConnector = mock[AuditConnector]
       val service = new AuditService(mockConnector)
 
-      val hc = HeaderCarrier(authorization =
-                               Some(Authorization("dummy bearer token")),
-                             sessionId = Some(SessionId("dummy session id")),
-                             requestId = Some(RequestId("dummy request id")))
+      val hc = HeaderCarrier(
+        authorization = Some(Authorization("dummy bearer token")),
+        sessionId = Some(SessionId("dummy session id")),
+        requestId = Some(RequestId("dummy request id"))
+      )
 
-      val model = AgentDetails(Arn("TARN0000001"), Active, "John Smith")
+      val model = AgentDetails(
+        Arn("TARN0000001"),
+        Active,
+        "John Smith"
+      )
 
       service.sendGetAgentDetails(model, Arn("ARN0001"))(
         hc,
         FakeRequest("GET", "/path"),
-        ExecutionContext.global)
+        ExecutionContext.global
+      )
 
       eventually {
         val captor = ArgumentCaptor.forClass(classOf[DataEvent])
-        verify(mockConnector).sendEvent(captor.capture())(any[HeaderCarrier],
-                                                          any[ExecutionContext])
+        verify(mockConnector).sendEvent(captor.capture())(
+          any[HeaderCarrier],
+          any[ExecutionContext]
+        )
         val sentEvent = captor.getValue.asInstanceOf[DataEvent]
 
         sentEvent.auditType shouldBe "GetAgentDetails"
@@ -76,4 +92,5 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar with Eventually {
       }
     }
   }
+
 }
