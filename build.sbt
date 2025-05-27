@@ -24,9 +24,9 @@ lazy val microservice = (project in file("."))
       "-Wconf:src=routes/.*:s", // silence warnings from routes files
       "-Wconf:src=*html:w",
     ),
-    Compile / unmanagedResourceDirectories += baseDirectory.value / "resources"
-//    Compile / scalafmtOnCompile := true,
-//    Test / scalafmtOnCompile := true
+    Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
+    Compile / scalafmtOnCompile := true,
+    Test / scalafmtOnCompile := true
   )
   .settings(
     Test / parallelExecution := false,
@@ -41,6 +41,6 @@ lazy val it = project
   .settings(DefaultBuildSettings.itSettings())
   .settings(libraryDependencies ++= AppDependencies.test)
   .settings(
-//    Compile / scalafmtOnCompile := true,
-//    Test / scalafmtOnCompile := true
+    Compile / scalafmtOnCompile := true,
+    Test / scalafmtOnCompile := true
   )
