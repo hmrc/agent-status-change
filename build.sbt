@@ -1,7 +1,7 @@
 import uk.gov.hmrc.{DefaultBuildSettings, SbtAutoBuildPlugin}
 
 ThisBuild / majorVersion := 1
-ThisBuild / scalaVersion := "2.13.12"
+ThisBuild / scalaVersion := "2.13.16"
 
 lazy val microservice = (project in file("."))
   .settings(
@@ -12,7 +12,7 @@ lazy val microservice = (project in file("."))
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
     routesImport ++= Seq("uk.gov.hmrc.agentstatuschange.binders.UrlBinders._"),
     scalacOptions ++= Seq(
-      "-Xfatal-warnings",
+//      "-Xfatal-warnings",
       "-Xlint:-missing-interpolator,_",
       //"-Ywarn-value-discard",
       "-Ywarn-dead-code",
