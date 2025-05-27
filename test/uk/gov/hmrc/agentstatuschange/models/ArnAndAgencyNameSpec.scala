@@ -20,7 +20,8 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.agentstatuschange.support.UnitSpec
 
-class ArnAndAgencyNameSpec extends UnitSpec {
+class ArnAndAgencyNameSpec
+extends UnitSpec {
 
   "ArnAndAgencyName" should {
     "serialize to json string" in {
@@ -31,9 +32,12 @@ class ArnAndAgencyNameSpec extends UnitSpec {
     "deserialize from json string" in {
       Json
         .parse(
-          """{"agentReferenceNumber": "TARN0000001", "agencyDetails": {"agencyName": "my agency name"}}""")
-        .as[ArnAndAgencyName] shouldBe ArnAndAgencyName(Arn("TARN0000001"),
-                                                        "my agency name")
+          """{"agentReferenceNumber": "TARN0000001", "agencyDetails": {"agencyName": "my agency name"}}"""
+        )
+        .as[ArnAndAgencyName] shouldBe ArnAndAgencyName(
+        Arn("TARN0000001"),
+        "my agency name"
+      )
     }
   }
 }

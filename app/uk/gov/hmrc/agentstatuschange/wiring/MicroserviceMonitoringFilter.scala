@@ -16,57 +16,77 @@
 
 package uk.gov.hmrc.agentstatuschange.wiring
 
-import java.util.regex.{Matcher, Pattern}
+import java.util.regex.Matcher
+import java.util.regex.Pattern
 import org.apache.pekko.stream.Materializer
 import app.Routes
 import com.codahale.metrics.MetricRegistry
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.Inject
+import javax.inject.Singleton
 import play.api.Logger
-import play.api.mvc.{Filter, RequestHeader, Result}
-import uk.gov.hmrc.http.{HttpException, UpstreamErrorResponse}
+import play.api.mvc.Filter
+import play.api.mvc.RequestHeader
+import play.api.mvc.Result
+import uk.gov.hmrc.http.HttpException
+import uk.gov.hmrc.http.UpstreamErrorResponse
 
 import scala.concurrent.duration.NANOSECONDS
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.util.Failure
+import scala.util.Success
 
 @Singleton
-class MicroserviceMonitoringFilter @Inject()(
-    metricRegistry: MetricRegistry,
-    routes: Routes)(implicit ec: ExecutionContext, val mat: Materializer)
-    extends MonitoringFilter(metricRegistry) {
+class MicroserviceMonitoringFilter @Inject() (
+  metricRegistry: MetricRegistry,
+  routes: Routes
+)(implicit
+  ec: ExecutionContext,
+  val mat: Materializer
+)
+extends MonitoringFilter(metricRegistry) {
 
-  override def keyToPatternMapping: Seq[(String, String)] =
-    KeyToPatternMappingFromRoutes(routes, Set())
+  override def keyToPatternMapping: Seq[(String, String)] = KeyToPatternMappingFromRoutes(routes, Set())
 }
 
 object KeyToPatternMappingFromRoutes {
-  def apply(routes: Routes, placeholders: Set[String]): Seq[(String, String)] =
-    routes.documentation.map {
-      case (method, route, _) => {
-        val r = route.replace("<[^/]+>", "")
-        val key = r
-          .split("/")
-          .map(p =>
-            if (p.startsWith("$")) {
-              val name = p.substring(1)
-              if (placeholders.contains(name)) s"{$name}" else ":"
-            } else p)
-          .mkString("|")
-        val pattern = r.replace("$", ":")
-        Logger(getClass).info(s"$key-$method -> $pattern")
-        (key, pattern)
-      }
+  def apply(
+    routes: Routes,
+    placeholders: Set[String]
+  ): Seq[(String, String)] = routes.documentation.map {
+    case (method, route, _) => {
+      val r = route.replace("<[^/]+>", "")
+      val key = r
+        .split("/")
+        .map(p =>
+          if (p.startsWith("$")) {
+            val name = p.substring(1)
+            if (placeholders.contains(name))
+              s"{$name}"
+            else
+              ":"
+          }
+          else
+            p
+        )
+        .mkString("|")
+      val pattern = r.replace("$", ":")
+      Logger(getClass).info(s"$key-$method -> $pattern")
+      (key, pattern)
     }
+  }
 }
 
 abstract class MonitoringFilter(kenshooRegistry: MetricRegistry)(
-    implicit ec: ExecutionContext)
-    extends Filter
-    with MonitoringKeyMatcher {
+  implicit ec: ExecutionContext
+)
+extends Filter
+with MonitoringKeyMatcher {
 
   override def apply(nextFilter: (RequestHeader) => Future[Result])(
-      requestHeader: RequestHeader): Future[Result] = {
+    requestHeader: RequestHeader
+  ): Future[Result] = {
 
     findMatchingKey(requestHeader.uri) match {
       case Some(key) =>
@@ -75,19 +95,22 @@ abstract class MonitoringFilter(kenshooRegistry: MetricRegistry)(
         }
       case None =>
         Logger(getClass).debug(
-          s"API-Not-Monitored: ${requestHeader.method}-${requestHeader.uri}")
+          s"API-Not-Monitored: ${requestHeader.method}-${requestHeader.uri}"
+        )
         nextFilter(requestHeader)
     }
   }
 
   private def monitor(serviceName: String)(function: => Future[Result])(
-      implicit ec: ExecutionContext): Future[Result] =
+    implicit ec: ExecutionContext
+  ): Future[Result] =
     timer(serviceName) {
       function
     }
 
   private def timer(serviceName: String)(function: => Future[Result])(
-      implicit ec: ExecutionContext): Future[Result] = {
+    implicit ec: ExecutionContext
+  ): Future[Result] = {
     val start = System.nanoTime()
     function.andThen {
       case Success(result) =>
@@ -102,20 +125,37 @@ abstract class MonitoringFilter(kenshooRegistry: MetricRegistry)(
           .inc()
 
       case Failure(exception: UpstreamErrorResponse) =>
-        recordFailure(serviceName, exception.statusCode, start)
+        recordFailure(
+          serviceName,
+          exception.statusCode,
+          start
+        )
       case Failure(exception: HttpException) =>
-        recordFailure(serviceName, exception.responseCode, start)
-      case Failure(_: Throwable) => recordFailure(serviceName, 500, start)
+        recordFailure(
+          serviceName,
+          exception.responseCode,
+          start
+        )
+      case Failure(_: Throwable) =>
+        recordFailure(
+          serviceName,
+          500,
+          start
+        )
     }
   }
 
-  private def recordFailure(serviceName: String,
-                            upstreamResponseCode: Int,
-                            startTime: Long): Unit = {
+  private def recordFailure(
+    serviceName: String,
+    upstreamResponseCode: Int,
+    startTime: Long
+  ): Unit = {
     val timerName = s"Timer-$serviceName"
     val counterName =
-      if (upstreamResponseCode >= 500) s"Http5xxErrorCount-$serviceName"
-      else s"Http4xxErrorCount-$serviceName"
+      if (upstreamResponseCode >= 500)
+        s"Http5xxErrorCount-$serviceName"
+      else
+        s"Http4xxErrorCount-$serviceName"
     kenshooRegistry.getTimers
       .getOrDefault(timerName, kenshooRegistry.timer(timerName))
       .update(System.nanoTime() - startTime, NANOSECONDS)
@@ -123,6 +163,7 @@ abstract class MonitoringFilter(kenshooRegistry: MetricRegistry)(
       .getOrDefault(counterName, kenshooRegistry.counter(counterName))
       .inc()
   }
+
 }
 
 trait MonitoringKeyMatcher {
@@ -131,10 +172,9 @@ trait MonitoringKeyMatcher {
 
   def keyToPatternMapping: Seq[(String, String)]
 
-  private lazy val patterns: Seq[(String, (Pattern, Seq[String]))] =
-    keyToPatternMapping
-      .map { case (k, p) => (k, preparePatternAndVariables(p)) }
-      .map { case (k, (p, vs)) => (k, (Pattern.compile(p), vs)) }
+  private lazy val patterns: Seq[(String, (Pattern, Seq[String]))] = keyToPatternMapping
+    .map { case (k, p) => (k, preparePatternAndVariables(p)) }
+    .map { case (k, (p, vs)) => (k, (Pattern.compile(p), vs)) }
 
   def preparePatternAndVariables(p: String): (String, Seq[String]) = {
     var pattern = p
@@ -144,7 +184,8 @@ trait MonitoringKeyMatcher {
       val variable = m.group().substring(1)
       if (variables.contains(variable)) {
         throw new IllegalArgumentException(
-          s"Duplicated variable name '$variable' in monitoring filter pattern '$p'")
+          s"Duplicated variable name '$variable' in monitoring filter pattern '$p'"
+        )
       }
       variables = variables :+ variable
     }
@@ -156,10 +197,14 @@ trait MonitoringKeyMatcher {
 
   def findMatchingKey(value: String): Option[String] =
     patterns.collectFirst {
-      case (key, (pattern, variables)) if pattern.matcher(value).matches() =>
-        (key, variables, readValues(pattern.matcher(value)))
+      case (key, (pattern, variables)) if pattern.matcher(value).matches() => (key, variables, readValues(pattern.matcher(value)))
     } map {
-      case (key, variables, values) => replaceVariables(key, variables, values)
+      case (key, variables, values) =>
+        replaceVariables(
+          key,
+          variables,
+          values
+        )
     }
 
   private def readValues(result: Matcher): Seq[String] = {
@@ -167,10 +212,13 @@ trait MonitoringKeyMatcher {
     (1 to result.groupCount()) map result.group
   }
 
-  private def replaceVariables(key: String,
-                               variables: Seq[String],
-                               values: Seq[String]): String =
-    if (values.isEmpty) key
+  private def replaceVariables(
+    key: String,
+    variables: Seq[String],
+    values: Seq[String]
+  ): String =
+    if (values.isEmpty)
+      key
     else
       values.zip(variables).foldLeft(key) {
         case (k, (value, variable)) => k.replace(variable, value)

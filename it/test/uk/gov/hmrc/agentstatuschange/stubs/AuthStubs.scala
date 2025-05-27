@@ -24,18 +24,30 @@ import uk.gov.hmrc.http.SessionKeys
 trait AuthStubs {
   me: WireMockSupport =>
 
-  case class Enrolment(serviceName: String,
-                       identifierName: String,
-                       identifierValue: String)
+  case class Enrolment(
+    serviceName: String,
+    identifierName: String,
+    identifierValue: String
+  )
 
-  def authorisedAsValidAgent[A](request: FakeRequest[A], arn: String) =
-    authenticated(request,
-                  Enrolment("HMRC-AS-AGENT", "AgentReferenceNumber", arn),
-                  isAgent = true)
+  def authorisedAsValidAgent[A](
+    request: FakeRequest[A],
+    arn: String
+  ) = authenticated(
+    request,
+    Enrolment(
+      "HMRC-AS-AGENT",
+      "AgentReferenceNumber",
+      arn
+    ),
+    isAgent = true
+  )
 
-  def authenticated[A](request: FakeRequest[A],
-                       enrolment: Enrolment,
-                       isAgent: Boolean): FakeRequest[A] = {
+  def authenticated[A](
+    request: FakeRequest[A],
+    enrolment: Enrolment,
+    isAgent: Boolean
+  ): FakeRequest[A] = {
     givenAuthorisedFor(
       s"""
          |{
@@ -64,19 +76,30 @@ trait AuthStubs {
         .willReturn(
           aResponse()
             .withStatus(401)
-            .withHeader("WWW-Authenticate", s"""MDTP detail="$mdtpDetail"""")))
+            .withHeader("WWW-Authenticate", s"""MDTP detail="$mdtpDetail"""")
+        )
+    )
   }
 
-  def givenAuthorisedFor(payload: String, responseBody: String): Unit = {
+  def givenAuthorisedFor(
+    payload: String,
+    responseBody: String
+  ): Unit = {
     stubFor(
       post(urlEqualTo("/auth/authorise"))
         .atPriority(1)
-        .withRequestBody(equalToJson(payload, true, true))
+        .withRequestBody(equalToJson(
+          payload,
+          true,
+          true
+        ))
         .willReturn(
           aResponse()
             .withStatus(200)
             .withHeader("Content-Type", "application/json")
-            .withBody(responseBody)))
+            .withBody(responseBody)
+        )
+    )
 
     stubFor(
       post(urlEqualTo("/auth/authorise"))
@@ -84,25 +107,32 @@ trait AuthStubs {
         .willReturn(
           aResponse()
             .withStatus(401)
-            .withHeader("WWW-Authenticate",
-                        "MDTP detail=\"InsufficientEnrolments\"")))
+            .withHeader(
+              "WWW-Authenticate",
+              "MDTP detail=\"InsufficientEnrolments\""
+            )
+        )
+    )
   }
 
   def verifyAuthoriseAttempt(): Unit = {
     verify(1, postRequestedFor(urlEqualTo("/auth/authorise")))
   }
 
-  def givenOnlyStrideStub(strideRole: String, strideUserId: String) = {
+  def givenOnlyStrideStub(
+    strideRole: String,
+    strideUserId: String
+  ) = {
     stubFor(
       post(urlEqualTo("/auth/authorise"))
         .withRequestBody(equalToJson(
           s"""
-                                        |{
-                                        |  "authorise": [
-                                        |    { "authProviders": ["PrivilegedApplication"] }
-                                        |  ],
-                                        |  "retrieve":["allEnrolments"]
-                                        |}""".stripMargin,
+             |{
+             |  "authorise": [
+             |    { "authProviders": ["PrivilegedApplication"] }
+             |  ],
+             |  "retrieve":["allEnrolments"]
+             |}""".stripMargin,
           true,
           true
         ))
@@ -119,7 +149,9 @@ trait AuthStubs {
                          |    "providerType": "PrivilegedApplication"
                          |  }
                          |}""".stripMargin)
-        ))
+        )
+    )
     this
   }
+
 }

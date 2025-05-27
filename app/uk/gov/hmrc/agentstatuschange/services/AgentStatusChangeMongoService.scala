@@ -27,25 +27,30 @@ import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import java.time.Instant
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 @Singleton
-class AgentStatusChangeMongoService @Inject()(mongoComponent: MongoComponent)(
-    implicit ec: ExecutionContext)
-    extends PlayMongoRepository[AgentStatusChangeRecord](
-      mongoComponent = mongoComponent,
-      collectionName = "agent-status-change",
-      domainFormat = AgentStatusChangeRecord.format,
-      indexes = Seq(
-        IndexModel(ascending("arn", "lastUpdated"),
-                   new IndexOptions().name("Arn_LastUpdated")))
-    ) {
+class AgentStatusChangeMongoService @Inject() (mongoComponent: MongoComponent)(
+  implicit ec: ExecutionContext
+)
+extends PlayMongoRepository[AgentStatusChangeRecord](
+  mongoComponent = mongoComponent,
+  collectionName = "agent-status-change",
+  domainFormat = AgentStatusChangeRecord.format,
+  indexes = Seq(
+    IndexModel(
+      ascending("arn", "lastUpdated"),
+      new IndexOptions().name("Arn_LastUpdated")
+    )
+  )
+) {
 
-  implicit val ord: Ordering[Instant] =
-    Ordering.by(time => time.toEpochMilli)
+  implicit val ord: Ordering[Instant] = Ordering.by(time => time.toEpochMilli)
 
   def findCurrentRecordByArn(
-      arn: String): Future[Option[AgentStatusChangeRecord]] = {
+    arn: String
+  ): Future[Option[AgentStatusChangeRecord]] = {
 
     val selector = equal("arn", arn)
     val descending = -1
@@ -58,6 +63,7 @@ class AgentStatusChangeMongoService @Inject()(mongoComponent: MongoComponent)(
   }
 
   def createRecord(agentStatusChangeRecord: AgentStatusChangeRecord)(
-      implicit ec: ExecutionContext): Future[Unit] =
-    collection.insertOne(agentStatusChangeRecord).head().map(_ => ())
+    implicit ec: ExecutionContext
+  ): Future[Unit] = collection.insertOne(agentStatusChangeRecord).head().map(_ => ())
+
 }

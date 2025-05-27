@@ -20,7 +20,9 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 
-abstract class AppBaseISpec extends BaseISpec with GuiceOneAppPerSuite {
+abstract class AppBaseISpec
+extends BaseISpec
+with GuiceOneAppPerSuite {
 
   override implicit lazy val app: Application = new GuiceApplicationBuilder()
     .configure(

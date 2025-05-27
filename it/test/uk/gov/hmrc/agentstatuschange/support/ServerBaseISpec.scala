@@ -20,15 +20,16 @@ import java.nio.charset.StandardCharsets.UTF_8
 import java.util.Base64
 
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.{Seconds, Span}
+import org.scalatest.time.Seconds
+import org.scalatest.time.Span
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 
 abstract class ServerBaseISpec
-    extends BaseISpec
-    with GuiceOneServerPerSuite
-    with ScalaFutures {
+extends BaseISpec
+with GuiceOneServerPerSuite
+with ScalaFutures {
 
   override implicit lazy val app: Application = new GuiceApplicationBuilder()
     .configure(
@@ -53,9 +54,8 @@ abstract class ServerBaseISpec
     )
     .build()
 
-  implicit override val patienceConfig: PatienceConfig =
-    PatienceConfig(timeout = Span(4, Seconds), interval = Span(1, Seconds))
+  override implicit val patienceConfig: PatienceConfig = PatienceConfig(timeout = Span(4, Seconds), interval = Span(1, Seconds))
 
-  def basicAuth(string: String): String =
-    Base64.getEncoder.encodeToString(string.getBytes(UTF_8))
+  def basicAuth(string: String): String = Base64.getEncoder.encodeToString(string.getBytes(UTF_8))
+
 }

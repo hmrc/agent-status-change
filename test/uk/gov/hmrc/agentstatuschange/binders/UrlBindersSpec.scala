@@ -16,10 +16,12 @@
 
 package uk.gov.hmrc.agentstatuschange.binders
 
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmtdidentifiers.model.Utr
 import uk.gov.hmrc.agentstatuschange.support.UnitSpec
 
-class UrlBindersSpec extends UnitSpec {
+class UrlBindersSpec
+extends UnitSpec {
 
   val utr = Utr("3110118001")
   val arn = Arn("TARN0000001")

@@ -16,9 +16,13 @@
 
 package uk.gov.hmrc.agentstatuschange.models
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.Json
+import play.api.libs.json.OFormat
 
-case class Reason(reason: Option[String], extraDetails: Option[String] = None)
+case class Reason(
+  reason: Option[String],
+  extraDetails: Option[String] = None
+)
 
 object Reason {
   implicit val format: OFormat[Reason] = Json.format

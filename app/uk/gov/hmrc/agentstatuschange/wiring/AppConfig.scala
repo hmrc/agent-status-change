@@ -25,6 +25,7 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @ImplementedBy(classOf[AppConfigImpl])
 trait AppConfig {
+
   val appName: String
   val desUrl: URL
   val desAuthorizationToken: String
@@ -35,28 +36,24 @@ trait AppConfig {
   val agentMappingBaseUrl: String
   val terminationStrideRole: String
   def expectedAuth: BasicAuthentication
+
 }
 
-class AppConfigImpl @Inject()(config: ServicesConfig) extends AppConfig {
+class AppConfigImpl @Inject() (config: ServicesConfig)
+extends AppConfig {
+
   val appName = config.getString("appName")
   val desUrl: URL = new URL(config.baseUrl("des"))
-  val desAuthorizationToken: String =
-    config.getString("microservice.services.des.authorization-token")
-  val desEnvironment: String =
-    config.getString("microservice.services.des.environment")
+  val desAuthorizationToken: String = config.getString("microservice.services.des.authorization-token")
+  val desEnvironment: String = config.getString("microservice.services.des.environment")
 
-  val agentClientAuthorisationBaseUrl: String =
-    config.baseUrl("agent-client-authorisation")
-  val agentFiRelationshipBaseUrl: String =
-    config.baseUrl("agent-fi-relationship")
-  val agentMappingBaseUrl: String =
-    config.baseUrl("agent-mapping")
+  val agentClientAuthorisationBaseUrl: String = config.baseUrl("agent-client-authorisation")
+  val agentFiRelationshipBaseUrl: String = config.baseUrl("agent-fi-relationship")
+  val agentMappingBaseUrl: String = config.baseUrl("agent-mapping")
 
-  val agentClientRelationshipsBaseUrl: String =
-    config.baseUrl("agent-client-relationships")
+  val agentClientRelationshipsBaseUrl: String = config.baseUrl("agent-client-relationships")
 
-  val terminationStrideRole: String =
-    config.getString("termination.stride.enrolment")
+  val terminationStrideRole: String = config.getString("termination.stride.enrolment")
 
   def expectedAuth: BasicAuthentication = {
     val username = config.getString("agent-termination.username")
@@ -64,4 +61,5 @@ class AppConfigImpl @Inject()(config: ServicesConfig) extends AppConfig {
 
     BasicAuthentication(username, password)
   }
+
 }
