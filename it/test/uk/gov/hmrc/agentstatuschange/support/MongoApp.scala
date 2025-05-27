@@ -16,17 +16,22 @@
 
 package uk.gov.hmrc.agentstatuschange.support
 
-import org.scalatest.{BeforeAndAfterEach, Suite, TestSuite}
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.Suite
+import org.scalatest.TestSuite
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import uk.gov.hmrc.mongo.test.MongoSupport
 
-trait DualSuite extends Suite with TestSuite
+trait DualSuite
+extends Suite
+with TestSuite
 
 trait MongoApp
-    extends BeforeAndAfterEach
-    with MongoSupport
-    with GuiceOneServerPerSuite {
-  me: DualSuite with MongoSupport =>
+extends BeforeAndAfterEach
+with MongoSupport
+with GuiceOneServerPerSuite {
+  me: DualSuite
+    with MongoSupport =>
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -36,4 +41,5 @@ trait MongoApp
   def dropMongoDb(): Unit = {
     dropDatabase()
   }
+
 }

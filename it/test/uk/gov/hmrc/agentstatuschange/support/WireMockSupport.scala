@@ -16,12 +16,15 @@
 
 package uk.gov.hmrc.agentstatuschange.support
 
-import java.net.{ServerSocket, URL}
+import java.net.ServerSocket
+import java.net.URL
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration._
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.Suite
 import play.api.Logging
 
 import scala.annotation.tailrec
@@ -35,7 +38,9 @@ object WireMockSupport {
   private lazy val wireMockPort = Port.randomAvailable
 }
 
-trait WireMockSupport extends BeforeAndAfterAll with BeforeAndAfterEach {
+trait WireMockSupport
+extends BeforeAndAfterAll
+with BeforeAndAfterEach {
   me: Suite =>
 
   def commonStubs(): Unit
@@ -44,13 +49,14 @@ trait WireMockSupport extends BeforeAndAfterAll with BeforeAndAfterEach {
   val wireMockHost = "localhost"
   val wireMockBaseUrlAsString = s"http://$wireMockHost:$wireMockPort"
   val wireMockBaseUrl = new URL(wireMockBaseUrlAsString)
-  protected implicit val implicitWireMockBaseUrl: WireMockBaseUrl =
-    WireMockBaseUrl(wireMockBaseUrl)
+  protected implicit val implicitWireMockBaseUrl: WireMockBaseUrl = WireMockBaseUrl(wireMockBaseUrl)
 
   protected def basicWireMockConfig(): WireMockConfiguration = wireMockConfig()
 
-  private val wireMockServer = new WireMockServer(
-    basicWireMockConfig().port(wireMockPort))
+  private val wireMockServer =
+    new WireMockServer(
+      basicWireMockConfig().port(wireMockPort)
+    )
 
   override protected def beforeAll(): Unit = {
     super.beforeAll()
@@ -72,10 +78,13 @@ trait WireMockSupport extends BeforeAndAfterAll with BeforeAndAfterEach {
   protected def stopWireMockServer() = wireMockServer.stop()
 
   protected def startWireMockServer() = wireMockServer.start()
+
 }
 
 // This class was copy-pasted from the hmrctest project, which is now deprecated.
-object Port extends Logging {
+object Port
+extends Logging {
+
   val rnd = new scala.util.Random
   val range = 8000 to 39999
   val usedPorts = List[Int]()
@@ -107,13 +116,18 @@ object Port extends Logging {
         socket = new ServerSocket(p)
         socket.setReuseAddress(true)
         true
-      } else {
+      }
+      else {
         false
       }
-    } catch {
+    }
+    catch {
       case t: Throwable => false
-    } finally {
-      if (socket != null) socket.close()
+    }
+    finally {
+      if (socket != null)
+        socket.close()
     }
   }
+
 }

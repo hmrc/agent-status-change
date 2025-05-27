@@ -19,47 +19,56 @@ package uk.gov.hmrc.agentstatuschange.connectors
 import java.net.URL
 
 import javax.inject.Inject
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmtdidentifiers.model.Utr
 import uk.gov.hmrc.agentstatuschange.UriPathEncoding.encodePathSegment
 import uk.gov.hmrc.agentstatuschange.models.ArnAndAgencyName
 import uk.gov.hmrc.agentstatuschange.wiring.AppConfig
 import uk.gov.hmrc.domain.TaxIdentifier
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.UpstreamErrorResponse.Upstream4xxResponse
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReads}
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.HttpReads
 
 import java.util.UUID
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 sealed trait ErrorCase
 
-case class Unsubscribed(detail: String) extends ErrorCase
+case class Unsubscribed(detail: String)
+extends ErrorCase
 
-case class Invalid(detail: String) extends ErrorCase
+case class Invalid(detail: String)
+extends ErrorCase
 
-class DesConnector @Inject()(appConfig: AppConfig, http: HttpClient) {
+class DesConnector @Inject() (
+  appConfig: AppConfig,
+  http: HttpClient
+) {
 
   def getArnAndAgencyNameFor(agentIdentifier: TaxIdentifier)(
-      implicit hc: HeaderCarrier,
-      ec: ExecutionContext): Future[Either[ErrorCase, ArnAndAgencyName]] = {
+    implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext
+  ): Future[Either[ErrorCase, ArnAndAgencyName]] = {
 
-    val url = agentIdentifier match {
-      case _: Arn =>
-        s"/registration/personal-details/arn/${encodePathSegment(agentIdentifier.value)}"
-      case _: Utr =>
-        s"/registration/personal-details/utr/${encodePathSegment(agentIdentifier.value)}"
-      case x =>
-        throw new Exception(
-          s"Unexpected agent identifier found: '${x.value}', unable to retrieve URL")
-    }
+    val url =
+      agentIdentifier match {
+        case _: Arn => s"/registration/personal-details/arn/${encodePathSegment(agentIdentifier.value)}"
+        case _: Utr => s"/registration/personal-details/utr/${encodePathSegment(agentIdentifier.value)}"
+        case x =>
+          throw new Exception(
+            s"Unexpected agent identifier found: '${x.value}', unable to retrieve URL"
+          )
+      }
 
     getWithDesHeaders[ArnAndAgencyName](new URL(appConfig.desUrl, url))
       .map(record => Right(record))
   }.recover {
-    case Upstream4xxResponse(ex) if ex.statusCode == 404 =>
-      Left(Unsubscribed("UTR_NOT_SUBSCRIBED"))
-    case Upstream4xxResponse(ex) if ex.statusCode == 400 =>
-      Left(Invalid("INVALID_UTR"))
+    case Upstream4xxResponse(ex) if ex.statusCode == 404 => Left(Unsubscribed("UTR_NOT_SUBSCRIBED"))
+    case Upstream4xxResponse(ex) if ex.statusCode == 400 => Left(Invalid("INVALID_UTR"))
     case e => throw new Exception(s"exception: ${e.getMessage}")
   }
 
@@ -67,15 +76,18 @@ class DesConnector @Inject()(appConfig: AppConfig, http: HttpClient) {
   private val CorrelationId = "CorrelationId"
   private val Authorization = "Authorization"
 
-  private def outboundHeaders =
-    Seq(
-      Environment -> "desEnvironment",
-      CorrelationId -> UUID.randomUUID().toString,
-      Authorization -> s"Bearer ${appConfig.desAuthorizationToken}"
-    )
+  private def outboundHeaders = Seq(
+    Environment -> "desEnvironment",
+    CorrelationId -> UUID.randomUUID().toString,
+    Authorization -> s"Bearer ${appConfig.desAuthorizationToken}"
+  )
 
   private def getWithDesHeaders[A: HttpReads](
-      url: URL)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[A] = {
+    url: URL
+  )(implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext
+  ): Future[A] = {
     http.GET[A](url, headers = outboundHeaders)
   }
 

@@ -16,31 +16,35 @@
 
 package uk.gov.hmrc.agentstatuschange.controllers
 
-import play.api.mvc.{AnyContentAsEmpty, Result}
+import play.api.mvc.AnyContentAsEmpty
+import play.api.mvc.Result
 import play.api.mvc.Results._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.auth.core.{
-  AuthConnector,
-  AuthorisationException,
-  InsufficientEnrolments
-}
-import uk.gov.hmrc.http.{Authorization, HeaderCarrier, SessionKeys}
+import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.auth.core.AuthorisationException
+import uk.gov.hmrc.auth.core.InsufficientEnrolments
+import uk.gov.hmrc.http.Authorization
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.SessionKeys
 import uk.gov.hmrc.agentstatuschange.support.AppBaseISpec
 
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
+import scala.concurrent.ExecutionContext
+import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.Future
 
-class AuthActionsISpec extends AppBaseISpec {
+class AuthActionsISpec
+extends AppBaseISpec {
 
-  object TestController extends AuthActions {
+  object TestController
+  extends AuthActions {
 
-    override def authConnector: AuthConnector =
-      app.injector.instanceOf[AuthConnector]
+    override def authConnector: AuthConnector = app.injector.instanceOf[AuthConnector]
 
     implicit val hc: HeaderCarrier = HeaderCarrier(
-      authorization = Some(Authorization("Bearer XYZ")))
-    implicit val request: FakeRequest[AnyContentAsEmpty.type] =
-      FakeRequest().withSession(SessionKeys.authToken -> "Bearer XYZ")
+      authorization = Some(Authorization("Bearer XYZ"))
+    )
+    implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withSession(SessionKeys.authToken -> "Bearer XYZ")
     implicit val ec: ExecutionContextExecutor = ExecutionContext.global
 
     def withAuthorisedAsAgent[A]: Result = {

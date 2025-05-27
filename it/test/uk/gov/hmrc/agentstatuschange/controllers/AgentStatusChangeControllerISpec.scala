@@ -16,19 +16,20 @@
 
 package uk.gov.hmrc.agentstatuschange.controllers
 
-import play.api.libs.json.{JsString, Json}
+import play.api.libs.json.JsString
+import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmtdidentifiers.model.Utr
 import uk.gov.hmrc.agentstatuschange.models._
 import uk.gov.hmrc.agentstatuschange.services.AgentStatusChangeMongoService
-import uk.gov.hmrc.agentstatuschange.stubs.{AgentStubs, DesStubs}
-import uk.gov.hmrc.agentstatuschange.support.{
-  DualSuite,
-  MongoApp,
-  ServerBaseISpec
-}
+import uk.gov.hmrc.agentstatuschange.stubs.AgentStubs
+import uk.gov.hmrc.agentstatuschange.stubs.DesStubs
+import uk.gov.hmrc.agentstatuschange.support.DualSuite
+import uk.gov.hmrc.agentstatuschange.support.MongoApp
+import uk.gov.hmrc.agentstatuschange.support.ServerBaseISpec
 import uk.gov.hmrc.http.HeaderNames
 
 import java.time.Instant
@@ -36,32 +37,36 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class AgentStatusChangeControllerISpec
-    extends ServerBaseISpec
-    with MongoApp
-    with DesStubs
-    with AgentStubs {
+extends ServerBaseISpec
+with MongoApp
+with DesStubs
+with AgentStubs {
 
   this: DualSuite =>
 
   val controller = app.injector.instanceOf(classOf[AgentStatusChangeController])
 
-  def repo: AgentStatusChangeMongoService =
-    app.injector.instanceOf[AgentStatusChangeMongoService]
+  def repo: AgentStatusChangeMongoService = app.injector.instanceOf[AgentStatusChangeMongoService]
 
   val utr = Utr("3110118001")
-  implicit val ord: Ordering[Instant] =
-    Ordering.by(time => time.toEpochMilli)
+  implicit val ord: Ordering[Instant] = Ordering.by(time => time.toEpochMilli)
 
   "AgentStatusChangeController" when {
     "GET /status/arn/:arn" should {
       "respond 200 with default stubbed data when no record exists" in {
-        givenBusinessPartnerRecordExistsFor("arn", utr, arn, "Bing Bing")
+        givenBusinessPartnerRecordExistsFor(
+          "arn",
+          utr,
+          arn,
+          "Bing Bing"
+        )
         val result = controller.getAgentDetailsByArn(arn)(FakeRequest())
         status(result) shouldBe 200
         contentAsJson(result) shouldBe Json.obj(
           "arn" -> arn,
           "agentStatus" -> (Active: AgentStatus),
-          "agencyName" -> Some("Bing Bing"))
+          "agencyName" -> Some("Bing Bing")
+        )
       }
 
       "respond 200 with data when a suspended record exists" in {
@@ -70,15 +75,25 @@ class AgentStatusChangeControllerISpec
             AgentStatusChangeRecord(
               arn,
               Suspended(Reason(Some("other"), Some("eaten by tyrannosaur"))),
-              Instant.parse("2019-01-01T10:15:30.00Z"))))
-        givenBusinessPartnerRecordExistsFor("arn", utr, arn, "Bong Bing")
+              Instant.parse("2019-01-01T10:15:30.00Z")
+            )
+          )
+        )
+        givenBusinessPartnerRecordExistsFor(
+          "arn",
+          utr,
+          arn,
+          "Bong Bing"
+        )
         val result = controller.getAgentDetailsByArn(arn)(FakeRequest())
         status(result) shouldBe 200
         contentAsJson(result) shouldBe Json.obj(
           "arn" -> arn,
           "agentStatus" -> (Suspended(
-            Reason(Some("other"), Some("eaten by tyrannosaur"))): AgentStatus),
-          "agencyName" -> Some("Bong Bing"))
+            Reason(Some("other"), Some("eaten by tyrannosaur"))
+          ): AgentStatus),
+          "agencyName" -> Some("Bong Bing")
+        )
       }
       "respond 200 with data when a deactivated record exists" in {
         await(
@@ -86,24 +101,44 @@ class AgentStatusChangeControllerISpec
             AgentStatusChangeRecord(
               arn,
               Deactivated(Reason(Some("other"), Some("brain in jar"))),
-              Instant.parse("2019-01-01T10:15:30.00Z"))))
-        givenBusinessPartnerRecordExistsFor("arn", utr, arn, "Bong Bing")
+              Instant.parse("2019-01-01T10:15:30.00Z")
+            )
+          )
+        )
+        givenBusinessPartnerRecordExistsFor(
+          "arn",
+          utr,
+          arn,
+          "Bong Bing"
+        )
         val result = controller.getAgentDetailsByArn(arn)(FakeRequest())
         status(result) shouldBe 200
         contentAsJson(result) shouldBe Json.obj(
           "arn" -> arn,
           "agentStatus" -> (Deactivated(
-            Reason(Some("other"), Some("brain in jar"))): AgentStatus),
-          "agencyName" -> Some("Bong Bing"))
+            Reason(Some("other"), Some("brain in jar"))
+          ): AgentStatus),
+          "agencyName" -> Some("Bong Bing")
+        )
       }
       "respond 404 with reason when record does not exist" in {
-        givenBusinessPartnerRecordNotFoundFor("arn", utr, arn, "")
+        givenBusinessPartnerRecordNotFoundFor(
+          "arn",
+          utr,
+          arn,
+          ""
+        )
         val result = controller.getAgentDetailsByArn(arn)(FakeRequest())
         status(result) shouldBe 404
         contentAsJson(result) shouldBe JsString("UTR_NOT_SUBSCRIBED")
       }
       "respond 400 with reason when utr is invalid" in {
-        givenBusinessPartnerRecordInvalidFor("arn", utr, arn, "")
+        givenBusinessPartnerRecordInvalidFor(
+          "arn",
+          utr,
+          arn,
+          ""
+        )
         val result = controller.getAgentDetailsByArn(arn)(FakeRequest())
         status(result) shouldBe 400
         contentAsJson(result) shouldBe JsString("INVALID_UTR")
@@ -111,13 +146,19 @@ class AgentStatusChangeControllerISpec
     }
     "GET /status/utr/:utr" should {
       "respond with data when active" in {
-        givenBusinessPartnerRecordExistsFor("utr", utr, arn, "Bong Bing")
+        givenBusinessPartnerRecordExistsFor(
+          "utr",
+          utr,
+          arn,
+          "Bong Bing"
+        )
         val result = controller.getAgentDetailsByUtr(utr)(FakeRequest())
         status(result) shouldBe 200
         contentAsJson(result) shouldBe Json.obj(
           "arn" -> arn,
           "agentStatus" -> (Active: AgentStatus),
-          "agencyName" -> Some("Bong Bing"))
+          "agencyName" -> Some("Bong Bing")
+        )
       }
       "respond with data when a suspended record exists" in {
         await(
@@ -125,15 +166,25 @@ class AgentStatusChangeControllerISpec
             AgentStatusChangeRecord(
               arn,
               Suspended(Reason(Some("other"), Some("eaten by tyrannosaur"))),
-              Instant.parse("2019-01-01T10:15:30.00Z"))))
-        givenBusinessPartnerRecordExistsFor("utr", utr, arn, "Bong Bing")
+              Instant.parse("2019-01-01T10:15:30.00Z")
+            )
+          )
+        )
+        givenBusinessPartnerRecordExistsFor(
+          "utr",
+          utr,
+          arn,
+          "Bong Bing"
+        )
         val result = controller.getAgentDetailsByUtr(utr)(FakeRequest())
         status(result) shouldBe 200
         contentAsJson(result) shouldBe Json.obj(
           "arn" -> arn,
           "agentStatus" -> (Suspended(
-            Reason(Some("other"), Some("eaten by tyrannosaur"))): AgentStatus),
-          "agencyName" -> Some("Bong Bing"))
+            Reason(Some("other"), Some("eaten by tyrannosaur"))
+          ): AgentStatus),
+          "agencyName" -> Some("Bong Bing")
+        )
       }
       "respond with data when a deactivated record exists" in {
         await(
@@ -141,24 +192,44 @@ class AgentStatusChangeControllerISpec
             AgentStatusChangeRecord(
               arn,
               Deactivated(Reason(Some("other"), Some("brain in jar"))),
-              Instant.parse("2019-01-01T10:15:30.00Z"))))
-        givenBusinessPartnerRecordExistsFor("utr", utr, arn, "Bong Bing")
+              Instant.parse("2019-01-01T10:15:30.00Z")
+            )
+          )
+        )
+        givenBusinessPartnerRecordExistsFor(
+          "utr",
+          utr,
+          arn,
+          "Bong Bing"
+        )
         val result = controller.getAgentDetailsByUtr(utr)(FakeRequest())
         status(result) shouldBe 200
         contentAsJson(result) shouldBe Json.obj(
           "arn" -> arn,
           "agentStatus" -> (Deactivated(
-            Reason(Some("other"), Some("brain in jar"))): AgentStatus),
-          "agencyName" -> Some("Bong Bing"))
+            Reason(Some("other"), Some("brain in jar"))
+          ): AgentStatus),
+          "agencyName" -> Some("Bong Bing")
+        )
       }
       "respond 404 with reason when record does not exist" in {
-        givenBusinessPartnerRecordNotFoundFor("utr", utr, arn, "")
+        givenBusinessPartnerRecordNotFoundFor(
+          "utr",
+          utr,
+          arn,
+          ""
+        )
         val result = controller.getAgentDetailsByUtr(utr)(FakeRequest())
         status(result) shouldBe 404
         contentAsJson(result) shouldBe JsString("UTR_NOT_SUBSCRIBED")
       }
       "respond 400 with reason when utr is invalid" in {
-        givenBusinessPartnerRecordInvalidFor("utr", utr, arn, "")
+        givenBusinessPartnerRecordInvalidFor(
+          "utr",
+          utr,
+          arn,
+          ""
+        )
         val result = controller.getAgentDetailsByUtr(utr)(FakeRequest())
         status(result) shouldBe 400
         contentAsJson(result) shouldBe JsString("INVALID_UTR")
@@ -169,21 +240,20 @@ class AgentStatusChangeControllerISpec
 
       "return 200 and create a new suspended record when a reason is provided" in {
         val requestBody = Json.parse("""{
-            |  "reason": "other",
-            |  "extraDetails": "missed the train"
-            |}""".stripMargin)
+                                       |  "reason": "other",
+                                       |  "extraDetails": "missed the train"
+                                       |}""".stripMargin)
 
-        val result: Future[Result] =
-          controller.changeStatus(arn)(request.withBody(requestBody))
+        val result: Future[Result] = controller.changeStatus(arn)(request.withBody(requestBody))
         status(result) shouldBe 200
         await(repo.findCurrentRecordByArn(arn.value)).get.status shouldBe Suspended(
-          Reason(Some("other"), Some("missed the train")))
+          Reason(Some("other"), Some("missed the train"))
+        )
       }
       "return 200 and create a new active record when a reason is not provided" in {
         val requestBody = Json.parse("""{}""".stripMargin)
 
-        val result: Future[Result] =
-          controller.changeStatus(arn)(request.withBody(requestBody))
+        val result: Future[Result] = controller.changeStatus(arn)(request.withBody(requestBody))
         status(result) shouldBe 200
         await(repo.findCurrentRecordByArn(arn.value)).get.status shouldBe Active
       }
@@ -196,10 +266,13 @@ class AgentStatusChangeControllerISpec
         givenSuccessfullyRemoveMapping(arn)
         givenSuccessfullyRemoveAgentClientRelationships(arn)
 
-        val result = controller.removeAgentRecords(arn)(FakeRequest(
-          "DELETE",
-          "agent/:arn/terminate").withHeaders(
-          HeaderNames.authorisation -> s"Basic ${basicAuth("username:password")}"))
+        val result =
+          controller.removeAgentRecords(arn)(FakeRequest(
+            "DELETE",
+            "agent/:arn/terminate"
+          ).withHeaders(
+            HeaderNames.authorisation -> s"Basic ${basicAuth("username:password")}"
+          ))
 
         status(result) shouldBe 200
       }
@@ -210,10 +283,13 @@ class AgentStatusChangeControllerISpec
         givenSuccessfullyRemoveMapping(arn)
         givenSuccessfullyRemoveAgentClientRelationships(arn)
 
-        val result = controller.removeAgentRecords(Arn("MARN01"))(FakeRequest(
-          "DELETE",
-          "agent/:arn/terminate").withHeaders(
-          HeaderNames.authorisation -> s"Basic ${basicAuth("username:password")}"))
+        val result =
+          controller.removeAgentRecords(Arn("MARN01"))(FakeRequest(
+            "DELETE",
+            "agent/:arn/terminate"
+          ).withHeaders(
+            HeaderNames.authorisation -> s"Basic ${basicAuth("username:password")}"
+          ))
 
         status(result) shouldBe 400
       }
@@ -223,10 +299,13 @@ class AgentStatusChangeControllerISpec
         givenInternalServerErrorIRemoveAFiRelationships(arn)
         givenInternalServerErrorRemoveMapping(arn)
 
-        val result = controller.removeAgentRecords(arn)(FakeRequest(
-          "DELETE",
-          "agent/:arn/terminate").withHeaders(
-          HeaderNames.authorisation -> s"Basic ${basicAuth("username:password")}"))
+        val result =
+          controller.removeAgentRecords(arn)(FakeRequest(
+            "DELETE",
+            "agent/:arn/terminate"
+          ).withHeaders(
+            HeaderNames.authorisation -> s"Basic ${basicAuth("username:password")}"
+          ))
 
         status(result) shouldBe 500
       }
@@ -236,13 +315,17 @@ class AgentStatusChangeControllerISpec
         givenSuccessfullyRemoveAFiRelationships(arn)
         givenInternalServerErrorRemoveMapping(arn)
 
-        val result = controller.removeAgentRecords(arn)(FakeRequest(
-          "DELETE",
-          "agent/:arn/terminate").withHeaders(
-          HeaderNames.authorisation -> s"Basic ${basicAuth("username:password")}"))
+        val result =
+          controller.removeAgentRecords(arn)(FakeRequest(
+            "DELETE",
+            "agent/:arn/terminate"
+          ).withHeaders(
+            HeaderNames.authorisation -> s"Basic ${basicAuth("username:password")}"
+          ))
 
         status(result) shouldBe 500
       }
     }
   }
+
 }

@@ -22,20 +22,24 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration._
 import org.scalatest.concurrent.Eventually
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.Suite
 
 trait UpstreamServicesStubs
-    extends BeforeAndAfterAll
-    with BeforeAndAfterEach
-    with Eventually {
+extends BeforeAndAfterAll
+with BeforeAndAfterEach
+with Eventually {
 
   this: Suite =>
 
   val wireMockHost = "localhost"
   val wireMockPort: Int = Port.randomAvailable
   val wireMockBaseUrlAsString = s"http://$wireMockHost:$wireMockPort"
-  lazy val wireMockServer = new WireMockServer(
-    wireMockConfig().port(wireMockPort))
+  lazy val wireMockServer =
+    new WireMockServer(
+      wireMockConfig().port(wireMockPort)
+    )
 
   val fakeCredId = "fakeCredId"
   val fakeCredIdType = "GovernmentGateway"
@@ -66,13 +70,17 @@ trait UpstreamServicesStubs
       .willReturn(aResponse()
         .withStatus(200)
         .withBody(
-          s"""{ "userDetailsLink":"$wireMockBaseUrl/user-details/id/$oid" }""".stripMargin)))
+          s"""{ "userDetailsLink":"$wireMockBaseUrl/user-details/id/$oid" }""".stripMargin
+        )))
 
     stubFor(
       get(urlPathEqualTo(s"/user-details/id/$oid"))
         .willReturn(aResponse()
           .withStatus(200)
           .withBody(
-            s"""{"authProviderId": "$fakeCredId", "authProviderIdType":"$fakeCredIdType"}""".stripMargin)))
+            s"""{"authProviderId": "$fakeCredId", "authProviderIdType":"$fakeCredIdType"}""".stripMargin
+          ))
+    )
   }
+
 }

@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.agentstatuschange.binders
 
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmtdidentifiers.model.Utr
 
 object UrlBinders {
-  implicit val utrBinder: SimpleObjectBinder[Utr] =
-    new SimpleObjectBinder[Utr](Utr.apply, _.value)
-  implicit val arnBinder: SimpleObjectBinder[Arn] =
-    new SimpleObjectBinder[Arn](Arn.apply, _.value)
+
+  implicit val utrBinder: SimpleObjectBinder[Utr] = new SimpleObjectBinder[Utr](Utr.apply, _.value)
+  implicit val arnBinder: SimpleObjectBinder[Arn] = new SimpleObjectBinder[Arn](Arn.apply, _.value)
+
 }
