@@ -1,4 +1,4 @@
-import uk.gov.hmrc.{DefaultBuildSettings, SbtAutoBuildPlugin}
+import uk.gov.hmrc.DefaultBuildSettings
 
 ThisBuild / majorVersion := 1
 ThisBuild / scalaVersion := "2.13.16"
@@ -32,7 +32,7 @@ lazy val microservice = (project in file("."))
     Test / parallelExecution := false,
     CodeCoverageSettings.scoverageSettings
   )
-  .enablePlugins(PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin)
+  .enablePlugins(PlayScala, SbtDistributablesPlugin)
   .disablePlugins(JUnitXmlReportPlugin)
 
 lazy val it = project
