@@ -42,22 +42,20 @@ class AgentConnector @Inject() (
   import appConfig.agentFiRelationshipBaseUrl
   import appConfig.agentMappingBaseUrl
 
-  def acaTerminateUrl(arn: Arn): String = s"$agentClientAuthorisationBaseUrl/agent-client-authorisation/agent/${arn.value}/terminate"
+  private def acaTerminateUrl(arn: Arn): String = s"$agentClientAuthorisationBaseUrl/agent-client-authorisation/agent/${arn.value}/terminate"
 
-  def afiTerminateUrl(arn: Arn): String = s"$agentFiRelationshipBaseUrl/agent-fi-relationship/agent/${arn.value}/terminate"
+  private def afiTerminateUrl(arn: Arn): String = s"$agentFiRelationshipBaseUrl/agent-fi-relationship/agent/${arn.value}/terminate"
 
-  def aMTerminateUrl(arn: Arn): String = s"$agentMappingBaseUrl/agent-mapping/agent/${arn.value}/terminate"
+  private def aMTerminateUrl(arn: Arn): String = s"$agentMappingBaseUrl/agent-mapping/agent/${arn.value}/terminate"
 
-  def acrTerminateUrl(arn: Arn): String = s"$agentClientRelationshipsBaseUrl/agent-client-relationships/agent/${arn.value}/terminate"
+  private def acrTerminateUrl(arn: Arn): String = s"$agentClientRelationshipsBaseUrl/agent-client-relationships/agent/${arn.value}/terminate"
 
   def removeAgentInvitations(arn: Arn)(implicit
     hc: HeaderCarrier,
     ec: ExecutionContext
   ): Future[Either[TerminationErrorResponse, TerminationResponse]] = {
-//    http
-//      .DELETE[HttpResponse](acaTerminateUrl(arn))
-      http.delete(url"${acaTerminateUrl(arn)}")
-        .execute[HttpResponse]
+    http.delete(url"${acaTerminateUrl(arn)}")
+      .execute[HttpResponse]
       .map { r =>
         r.status match {
           case 200 =>
@@ -95,8 +93,6 @@ class AgentConnector @Inject() (
     hc: HeaderCarrier,
     ec: ExecutionContext
   ): Future[Either[TerminationErrorResponse, TerminationResponse]] = {
-//    http
-//      .DELETE[HttpResponse](afiTerminateUrl(arn))
     http.delete(url"${afiTerminateUrl(arn)}")
       .execute[HttpResponse]
       .map { r =>
@@ -131,8 +127,6 @@ class AgentConnector @Inject() (
     hc: HeaderCarrier,
     ec: ExecutionContext
   ): Future[Either[TerminationErrorResponse, TerminationResponse]] = {
-//    http
-//      .DELETE[HttpResponse](aMTerminateUrl(arn))
     http.delete(url"${aMTerminateUrl(arn)}")
       .execute[HttpResponse]
       .map { r =>
@@ -167,8 +161,6 @@ class AgentConnector @Inject() (
     hc: HeaderCarrier,
     ec: ExecutionContext
   ): Future[Either[TerminationErrorResponse, TerminationResponse]] = {
-//    http
-//      .DELETE[HttpResponse](acrTerminateUrl(arn))
     http.delete(url"${acrTerminateUrl(arn)}")
       .execute[HttpResponse]
       .map { r =>
