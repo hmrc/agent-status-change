@@ -52,11 +52,7 @@ class DesConnector @Inject() (
   private val CorrelationId = "CorrelationId"
   private val Authorization = "Authorization"
 
-  private def outboundHeaders = Seq(
-    Environment -> "desEnvironment",
-    CorrelationId -> UUID.randomUUID().toString,
-    Authorization -> s"Bearer ${appConfig.desAuthorizationToken}"
-  )
+  private def getCorrelationIdHeader = CorrelationId -> UUID.randomUUID().toString
 
   def getArnAndAgencyNameFor(agentIdentifier: TaxIdentifier)(
     implicit
@@ -74,23 +70,11 @@ class DesConnector @Inject() (
           )
       }
 
-//    def getWithDesHeaders[A: HttpReads](
-//                                                 url: URL
-//                                               )(implicit
-//                                                 hc: HeaderCarrier,
-//                                                 ec: ExecutionContext
-//                                               ): Future[A] = {
-//      http.GET[A](url, headers = outboundHeaders)
-//    }
-
-//    getWithDesHeaders[ArnAndAgencyName](new URL(appConfig.desUrl, url))
-val getUrl = new URL(appConfig.desUrl, url)
-//    http.GET[ArnAndAgencyName](new URL(appConfig.desUrl, url), headers = outboundHeaders)
-http.get(getUrl)
-  .setHeader(outboundHeaders(0))
-  .setHeader(outboundHeaders(1))
-  .setHeader(outboundHeaders(2))
-  .execute[ArnAndAgencyName]
+    http.get(new URL(appConfig.desUrl, url))
+      .setHeader(Environment -> "desEnvironment")
+      .setHeader(getCorrelationIdHeader)
+      .setHeader(Authorization -> s"Bearer ${appConfig.desAuthorizationToken}")
+      .execute[ArnAndAgencyName]
       .map(record => Right(record))
   }.recover {
     case Upstream4xxResponse(ex) if ex.statusCode == 404 => Left(Unsubscribed("UTR_NOT_SUBSCRIBED"))
