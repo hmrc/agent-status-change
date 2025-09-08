@@ -28,7 +28,7 @@ import uk.gov.hmrc.domain.TaxIdentifier
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.UpstreamErrorResponse.Upstream4xxResponse
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.HttpReads
 
 import java.util.UUID
@@ -45,8 +45,18 @@ extends ErrorCase
 
 class DesConnector @Inject() (
   appConfig: AppConfig,
-  http: HttpClient
+  http: HttpClientV2
 ) {
+
+  private val Environment = "Environment"
+  private val CorrelationId = "CorrelationId"
+  private val Authorization = "Authorization"
+
+  private def outboundHeaders = Seq(
+    Environment -> "desEnvironment",
+    CorrelationId -> UUID.randomUUID().toString,
+    Authorization -> s"Bearer ${appConfig.desAuthorizationToken}"
+  )
 
   def getArnAndAgencyNameFor(agentIdentifier: TaxIdentifier)(
     implicit
@@ -64,31 +74,28 @@ class DesConnector @Inject() (
           )
       }
 
-    getWithDesHeaders[ArnAndAgencyName](new URL(appConfig.desUrl, url))
+//    def getWithDesHeaders[A: HttpReads](
+//                                                 url: URL
+//                                               )(implicit
+//                                                 hc: HeaderCarrier,
+//                                                 ec: ExecutionContext
+//                                               ): Future[A] = {
+//      http.GET[A](url, headers = outboundHeaders)
+//    }
+
+//    getWithDesHeaders[ArnAndAgencyName](new URL(appConfig.desUrl, url))
+val getUrl = new URL(appConfig.desUrl, url)
+//    http.GET[ArnAndAgencyName](new URL(appConfig.desUrl, url), headers = outboundHeaders)
+http.get(getUrl)
+  .setHeader(outboundHeaders(0))
+  .setHeader(outboundHeaders(1))
+  .setHeader(outboundHeaders(2))
+  .execute[ArnAndAgencyName]
       .map(record => Right(record))
   }.recover {
     case Upstream4xxResponse(ex) if ex.statusCode == 404 => Left(Unsubscribed("UTR_NOT_SUBSCRIBED"))
     case Upstream4xxResponse(ex) if ex.statusCode == 400 => Left(Invalid("INVALID_UTR"))
     case e => throw new Exception(s"exception: ${e.getMessage}")
-  }
-
-  private val Environment = "Environment"
-  private val CorrelationId = "CorrelationId"
-  private val Authorization = "Authorization"
-
-  private def outboundHeaders = Seq(
-    Environment -> "desEnvironment",
-    CorrelationId -> UUID.randomUUID().toString,
-    Authorization -> s"Bearer ${appConfig.desAuthorizationToken}"
-  )
-
-  private def getWithDesHeaders[A: HttpReads](
-    url: URL
-  )(implicit
-    hc: HeaderCarrier,
-    ec: ExecutionContext
-  ): Future[A] = {
-    http.GET[A](url, headers = outboundHeaders)
   }
 
 }
