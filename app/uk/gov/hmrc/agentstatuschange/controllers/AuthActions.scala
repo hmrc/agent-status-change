@@ -24,9 +24,7 @@ import play.api.mvc.Results.Forbidden
 import play.api.mvc.Results.Unauthorized
 import play.api.mvc.Request
 import play.api.mvc.Result
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.agentmtdidentifiers.model.MtdItId
-import uk.gov.hmrc.agentstatuschange.models.BasicAuthentication
+import uk.gov.hmrc.agentstatuschange.models.{Arn, BasicAuthentication, MtdItId}
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core._

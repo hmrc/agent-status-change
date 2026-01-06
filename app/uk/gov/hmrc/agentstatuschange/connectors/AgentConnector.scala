@@ -20,9 +20,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import play.api.Logger
 import play.api.libs.json.Json
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.agentstatuschange.models.TerminationErrorResponse
-import uk.gov.hmrc.agentstatuschange.models.TerminationResponse
+import uk.gov.hmrc.agentstatuschange.models.{Arn, TerminationErrorResponse, TerminationResponse}
 import uk.gov.hmrc.agentstatuschange.wiring.AppConfig
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 import uk.gov.hmrc.http.client.HttpClientV2

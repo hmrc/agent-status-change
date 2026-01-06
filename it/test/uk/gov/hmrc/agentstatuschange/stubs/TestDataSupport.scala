@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentstatuschange.stubs
 
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentstatuschange.models.Arn
 
 trait TestDataSupport {
 

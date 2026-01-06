@@ -17,13 +17,11 @@
 package uk.gov.hmrc.agentstatuschange.services
 
 import com.google.inject.Singleton
+
 import javax.inject.Inject
 import play.api.libs.json.Json
 import play.api.mvc.Request
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.agentstatuschange.models.AgentDetails
-import uk.gov.hmrc.agentstatuschange.models.DeletionCount
-import uk.gov.hmrc.agentstatuschange.models.TerminationErrorResponse
+import uk.gov.hmrc.agentstatuschange.models.{AgentDetails, Arn, DeletionCount, TerminationErrorResponse}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.AuditExtensions._
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector

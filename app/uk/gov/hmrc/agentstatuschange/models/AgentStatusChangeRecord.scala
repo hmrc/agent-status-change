@@ -17,7 +17,6 @@
 package uk.gov.hmrc.agentstatuschange.models
 
 import play.api.libs.json._
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
 import java.time.Instant

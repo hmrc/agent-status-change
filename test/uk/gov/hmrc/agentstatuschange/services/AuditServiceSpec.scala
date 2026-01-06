@@ -24,9 +24,7 @@ import org.scalatest.time.Millis
 import org.scalatest.time.Span
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.test.FakeRequest
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.agentstatuschange.models.Active
-import uk.gov.hmrc.agentstatuschange.models.AgentDetails
+import uk.gov.hmrc.agentstatuschange.models.{Active, AgentDetails, Arn}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.Authorization
 import uk.gov.hmrc.http.RequestId
