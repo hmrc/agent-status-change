@@ -22,8 +22,6 @@ import play.api.libs.json.JsValue
 import play.api.libs.json.Json.toJson
 import play.api.mvc._
 import play.api.Configuration
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.agentmtdidentifiers.model.Utr
 import uk.gov.hmrc.agentstatuschange.connectors.AgentConnector
 import uk.gov.hmrc.agentstatuschange.connectors.DesConnector
 import uk.gov.hmrc.agentstatuschange.connectors.Invalid

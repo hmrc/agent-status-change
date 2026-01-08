@@ -16,15 +16,24 @@
 
 package uk.gov.hmrc.agentstatuschange.models
 
-import play.api.libs.json.Json
-import play.api.libs.json.OFormat
+import uk.gov.hmrc.domain.SimpleObjectReads
+import uk.gov.hmrc.domain.SimpleObjectWrites
+import uk.gov.hmrc.domain.TaxIdentifier
 
-case class AgentDetails(
-  arn: Arn,
-  agentStatus: AgentStatus,
-  agencyName: String
-)
+case class MtdItId(value: String)
+  extends TaxIdentifier
 
-object AgentDetails {
-  implicit val formats: OFormat[AgentDetails] = Json.format
+object MtdItId {
+
+  private val pattern = "^[0-9A-Za-z]{1,15}$".r
+
+  def isValid(mtdItId: String): Boolean =
+    mtdItId match {
+      case pattern(_*) => true
+      case _ => false
+    }
+
+  implicit val reads: SimpleObjectReads[MtdItId] = new SimpleObjectReads[MtdItId]("value", MtdItId.apply)
+  implicit val writes: SimpleObjectWrites[MtdItId] = new SimpleObjectWrites[MtdItId](_.value)
+
 }

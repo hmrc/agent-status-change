@@ -17,7 +17,6 @@
 package uk.gov.hmrc.agentstatuschange.models
 
 import play.api.libs.json.Json
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.agentstatuschange.support.UnitSpec
 
 class ArnAndAgencyNameSpec

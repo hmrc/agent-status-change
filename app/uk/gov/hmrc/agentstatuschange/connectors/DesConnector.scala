@@ -16,24 +16,18 @@
 
 package uk.gov.hmrc.agentstatuschange.connectors
 
-import java.net.URL
-
-import javax.inject.Inject
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.agentmtdidentifiers.model.Utr
 import uk.gov.hmrc.agentstatuschange.UriPathEncoding.encodePathSegment
-import uk.gov.hmrc.agentstatuschange.models.ArnAndAgencyName
+import uk.gov.hmrc.agentstatuschange.models.{Arn, ArnAndAgencyName, Utr}
 import uk.gov.hmrc.agentstatuschange.wiring.AppConfig
 import uk.gov.hmrc.domain.TaxIdentifier
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.UpstreamErrorResponse.Upstream4xxResponse
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.HttpReads
-
+import java.net.URL
 import java.util.UUID
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
+import javax.inject.Inject
+import scala.concurrent.{ExecutionContext, Future}
 
 sealed trait ErrorCase
 

@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.agentstatuschange.binders
 
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.agentmtdidentifiers.model.Utr
+
+import uk.gov.hmrc.agentstatuschange.models.{Arn, Utr}
 import uk.gov.hmrc.agentstatuschange.support.UnitSpec
 
 class UrlBindersSpec

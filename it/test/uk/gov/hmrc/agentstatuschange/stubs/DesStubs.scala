@@ -17,13 +17,12 @@
 package uk.gov.hmrc.agentstatuschange.stubs
 
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.agentmtdidentifiers.model.Utr
 import uk.gov.hmrc.agentstatuschange.support.WireMockSupport
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock._
+import uk.gov.hmrc.agentstatuschange.models.{Arn, Utr}
 
 trait DesStubs {
 

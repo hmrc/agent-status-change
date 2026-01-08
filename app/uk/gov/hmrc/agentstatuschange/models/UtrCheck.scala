@@ -16,15 +16,13 @@
 
 package uk.gov.hmrc.agentstatuschange.models
 
-import play.api.libs.json.Json
-import play.api.libs.json.OFormat
+import uk.gov.hmrc.domain.Modulus11Check
 
-case class AgentDetails(
-  arn: Arn,
-  agentStatus: AgentStatus,
-  agencyName: String
-)
+object UtrCheck
+  extends Modulus11Check {
 
-object AgentDetails {
-  implicit val formats: OFormat[AgentDetails] = Json.format
+  def isValid(utr: String): Boolean = {
+    val suffix: String = utr.substring(1)
+    calculateCheckCharacter(suffix) == utr.charAt(0)
+  }
 }
