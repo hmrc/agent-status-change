@@ -70,12 +70,16 @@ with AuthActions {
 
   def getAgentDetailsByArn(arn: Arn): Action[AnyContent] = Action.async {
     implicit request =>
-      getAgentDetails(arn)
+      authorised() {
+        getAgentDetails(arn)
+      }
   }
 
   def getAgentDetailsByUtr(utr: Utr): Action[AnyContent] = Action.async {
     implicit request =>
-      getAgentDetails(utr)
+      authorised() {
+        getAgentDetails(utr)
+      }
   }
 
   def getAgentDetails[T <: TaxIdentifier](agentId: T)(
@@ -122,28 +126,30 @@ with AuthActions {
 
   def changeStatus(arn: Arn): Action[JsValue] =
     Action.async(parse.json) { implicit request =>
-      withJsonBody[Reason] { reason =>
-        reason.reason match {
-          case Some(_) =>
-            for {
-              _ <- agentStatusChangeMongoService.createRecord(
-                AgentStatusChangeRecord(
-                  arn,
-                  Suspended(reason),
-                  Instant.now()
+      authorised() {
+        withJsonBody[Reason] { reason =>
+          reason.reason match {
+            case Some(_) =>
+              for {
+                _ <- agentStatusChangeMongoService.createRecord(
+                  AgentStatusChangeRecord(
+                    arn,
+                    Suspended(reason),
+                    Instant.now()
+                  )
                 )
-              )
-            } yield Ok
-          case None =>
-            for {
-              _ <- agentStatusChangeMongoService.createRecord(
-                AgentStatusChangeRecord(
-                  arn,
-                  Active,
-                  Instant.now()
+              } yield Ok
+            case None =>
+              for {
+                _ <- agentStatusChangeMongoService.createRecord(
+                  AgentStatusChangeRecord(
+                    arn,
+                    Active,
+                    Instant.now()
+                  )
                 )
-              )
-            } yield Ok
+              } yield Ok
+          }
         }
       }
     }

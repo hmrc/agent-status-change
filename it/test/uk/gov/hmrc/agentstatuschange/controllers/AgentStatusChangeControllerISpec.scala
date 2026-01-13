@@ -16,18 +16,14 @@
 
 package uk.gov.hmrc.agentstatuschange.controllers
 
-import play.api.libs.json.JsString
-import play.api.libs.json.Json
+import play.api.libs.json.{JsString, Json}
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentstatuschange.models._
 import uk.gov.hmrc.agentstatuschange.services.AgentStatusChangeMongoService
-import uk.gov.hmrc.agentstatuschange.stubs.AgentStubs
-import uk.gov.hmrc.agentstatuschange.stubs.DesStubs
-import uk.gov.hmrc.agentstatuschange.support.DualSuite
-import uk.gov.hmrc.agentstatuschange.support.MongoApp
-import uk.gov.hmrc.agentstatuschange.support.ServerBaseISpec
+import uk.gov.hmrc.agentstatuschange.stubs.{AgentStubs, DesStubs}
+import uk.gov.hmrc.agentstatuschange.support.{DualSuite, MongoApp, ServerBaseISpec}
 import uk.gov.hmrc.http.HeaderNames
 
 import java.time.Instant
@@ -51,14 +47,16 @@ with AgentStubs {
 
   "AgentStatusChangeController" when {
     "GET /status/arn/:arn" should {
+      val request = FakeRequest().withHeaders(HeaderNames.authorisation -> "Bearer XYZ")
       "respond 200 with default stubbed data when no record exists" in {
+        givenAuthorisedFor("{}", "{}")
         givenBusinessPartnerRecordExistsFor(
           "arn",
           utr,
           arn,
           "Bing Bing"
         )
-        val result = controller.getAgentDetailsByArn(arn)(FakeRequest())
+        val result = controller.getAgentDetailsByArn(arn)(request)
         status(result) shouldBe 200
         contentAsJson(result) shouldBe Json.obj(
           "arn" -> arn,
@@ -77,13 +75,14 @@ with AgentStubs {
             )
           )
         )
+        givenAuthorisedFor("{}", "{}")
         givenBusinessPartnerRecordExistsFor(
           "arn",
           utr,
           arn,
           "Bong Bing"
         )
-        val result = controller.getAgentDetailsByArn(arn)(FakeRequest())
+        val result = controller.getAgentDetailsByArn(arn)(request)
         status(result) shouldBe 200
         contentAsJson(result) shouldBe Json.obj(
           "arn" -> arn,
@@ -93,6 +92,7 @@ with AgentStubs {
           "agencyName" -> Some("Bong Bing")
         )
       }
+
       "respond 200 with data when a deactivated record exists" in {
         await(
           repo.createRecord(
@@ -103,13 +103,14 @@ with AgentStubs {
             )
           )
         )
+        givenAuthorisedFor("{}", "{}")
         givenBusinessPartnerRecordExistsFor(
           "arn",
           utr,
           arn,
           "Bong Bing"
         )
-        val result = controller.getAgentDetailsByArn(arn)(FakeRequest())
+        val result = controller.getAgentDetailsByArn(arn)(request)
         status(result) shouldBe 200
         contentAsJson(result) shouldBe Json.obj(
           "arn" -> arn,
@@ -119,38 +120,45 @@ with AgentStubs {
           "agencyName" -> Some("Bong Bing")
         )
       }
+
       "respond 404 with reason when record does not exist" in {
+        givenAuthorisedFor("{}", "{}")
         givenBusinessPartnerRecordNotFoundFor(
           "arn",
           utr,
           arn,
           ""
         )
-        val result = controller.getAgentDetailsByArn(arn)(FakeRequest())
+        val result = controller.getAgentDetailsByArn(arn)(request)
         status(result) shouldBe 404
         contentAsJson(result) shouldBe JsString("UTR_NOT_SUBSCRIBED")
       }
+
       "respond 400 with reason when utr is invalid" in {
+        givenAuthorisedFor("{}", "{}")
         givenBusinessPartnerRecordInvalidFor(
           "arn",
           utr,
           arn,
           ""
         )
-        val result = controller.getAgentDetailsByArn(arn)(FakeRequest())
+        val result = controller.getAgentDetailsByArn(arn)(request)
         status(result) shouldBe 400
         contentAsJson(result) shouldBe JsString("INVALID_UTR")
       }
     }
+
     "GET /status/utr/:utr" should {
+      val request = FakeRequest().withHeaders(HeaderNames.authorisation -> "Bearer XYZ")
       "respond with data when active" in {
+        givenAuthorisedFor("{}", "{}")
         givenBusinessPartnerRecordExistsFor(
           "utr",
           utr,
           arn,
           "Bong Bing"
         )
-        val result = controller.getAgentDetailsByUtr(utr)(FakeRequest())
+        val result = controller.getAgentDetailsByUtr(utr)(request)
         status(result) shouldBe 200
         contentAsJson(result) shouldBe Json.obj(
           "arn" -> arn,
@@ -158,6 +166,7 @@ with AgentStubs {
           "agencyName" -> Some("Bong Bing")
         )
       }
+
       "respond with data when a suspended record exists" in {
         await(
           repo.createRecord(
@@ -168,13 +177,14 @@ with AgentStubs {
             )
           )
         )
+        givenAuthorisedFor("{}", "{}")
         givenBusinessPartnerRecordExistsFor(
           "utr",
           utr,
           arn,
           "Bong Bing"
         )
-        val result = controller.getAgentDetailsByUtr(utr)(FakeRequest())
+        val result = controller.getAgentDetailsByUtr(utr)(request)
         status(result) shouldBe 200
         contentAsJson(result) shouldBe Json.obj(
           "arn" -> arn,
@@ -184,6 +194,7 @@ with AgentStubs {
           "agencyName" -> Some("Bong Bing")
         )
       }
+
       "respond with data when a deactivated record exists" in {
         await(
           repo.createRecord(
@@ -194,13 +205,14 @@ with AgentStubs {
             )
           )
         )
+        givenAuthorisedFor("{}", "{}")
         givenBusinessPartnerRecordExistsFor(
           "utr",
           utr,
           arn,
           "Bong Bing"
         )
-        val result = controller.getAgentDetailsByUtr(utr)(FakeRequest())
+        val result = controller.getAgentDetailsByUtr(utr)(request)
         status(result) shouldBe 200
         contentAsJson(result) shouldBe Json.obj(
           "arn" -> arn,
@@ -210,33 +222,46 @@ with AgentStubs {
           "agencyName" -> Some("Bong Bing")
         )
       }
+
       "respond 404 with reason when record does not exist" in {
+        givenAuthorisedFor("{}", "{}")
         givenBusinessPartnerRecordNotFoundFor(
           "utr",
           utr,
           arn,
           ""
         )
-        val result = controller.getAgentDetailsByUtr(utr)(FakeRequest())
+        val result = controller.getAgentDetailsByUtr(utr)(request)
         status(result) shouldBe 404
         contentAsJson(result) shouldBe JsString("UTR_NOT_SUBSCRIBED")
       }
+
       "respond 400 with reason when utr is invalid" in {
+        givenAuthorisedFor("{}", "{}")
         givenBusinessPartnerRecordInvalidFor(
           "utr",
           utr,
           arn,
           ""
         )
-        val result = controller.getAgentDetailsByUtr(utr)(FakeRequest())
+        val result = controller.getAgentDetailsByUtr(utr)(request)
         status(result) shouldBe 400
         contentAsJson(result) shouldBe JsString("INVALID_UTR")
       }
     }
-    "POST /status/arn/:arn" should {
-      val request = FakeRequest()
 
+    "POST /status/arn/:arn" should {
+      val request = FakeRequest().withHeaders(HeaderNames.authorisation -> "Bearer XYZ")
       "return 200 and create a new suspended record when a reason is provided" in {
+        givenAuthorisedFor(
+          "{}",
+          s"""{
+             |"authorisedEnrolments": [
+             |  { "key":"HMRC-AS-AGENT", "identifiers": [
+             |    { "key":"AgentReferenceNumber", "value": "${arn.value}" }
+             |  ]}
+             |]}""".stripMargin
+        )
         val requestBody = Json.parse("""{
                                        |  "reason": "other",
                                        |  "extraDetails": "missed the train"
@@ -249,6 +274,15 @@ with AgentStubs {
         )
       }
       "return 200 and create a new active record when a reason is not provided" in {
+        givenAuthorisedFor(
+          "{}",
+          s"""{
+             |"authorisedEnrolments": [
+             |  { "key":"HMRC-AS-AGENT", "identifiers": [
+             |    { "key":"AgentReferenceNumber", "value": "${arn.value}" }
+             |  ]}
+             |]}""".stripMargin
+        )
         val requestBody = Json.parse("""{}""".stripMargin)
 
         val result: Future[Result] = controller.changeStatus(arn)(request.withBody(requestBody))
